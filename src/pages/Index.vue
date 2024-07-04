@@ -3,7 +3,12 @@
     <div class="hero">
       <div class="pitch text-center text-secondary">
         <h1 class="text-h2 text-bold">Your @nostr.com Identity</h1>
-        <p class="text-h6">Nostr Identifier | Nostr Relay | LN Address</p>
+        <p class="text-h6">
+          <span>Nostr Identifier</span> |
+          <span class="cursor-pointer">Nostr Market</span> |
+          <span>Nostr Relay</span> |
+          <span> LN Address</span>
+        </p>
       </div>
       <q-input
         dark
@@ -134,6 +139,9 @@ const handle = ref("");
 
 const handleSearch = async () => {
   try {
+    if (!handle.value) {
+      return;
+    }
     const { data } = await saas.queryIdentifier(handle.value);
     $store.handle = handle.value;
     $store.handleData = data;
