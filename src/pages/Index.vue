@@ -147,6 +147,12 @@ const handleSearch = async () => {
     $store.handleData = data;
   } catch (error) {
     console.error("Error searching for identifier: ", error);
+    $q.notify({
+      message: "There was a problem while searching",
+      color: "negative",
+      position: "top",
+      timeout: 2000,
+    });
   } finally {
     handle.value = "";
   }
