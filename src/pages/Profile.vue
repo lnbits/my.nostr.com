@@ -123,6 +123,7 @@
 import { ref, onMounted } from "vue";
 import { useNostrStore } from "src/stores/nostr";
 import { useRoute, useRouter } from "vue-router";
+import { saas } from "boot/saas";
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 
 const $nostr = useNostrStore();
@@ -147,8 +148,34 @@ const removeRelayFn = (relay) => {
   );
 };
 
-onMounted(() => {
+const getUserIdentifier = async (id) => {
+  try {
+    const { data } = await saas.getUsrIdentities(id);
+    const identifier = data[0];
+    if (!identifier) {
+      return;
+    }
+
+    return {
+      name: identifier.local_part,
+      pubkey: identifier.pubkey,
+      relays: identifier.config.relays,
+    };
+  } catch (error) {
+    console.error("error", error);
+  }
+};
+
+onMounted(async () => {
   if ($nostr.profiles.size === 0) {
+    const name = $route.params["name"];
+    if (name) {
+      const identifier = await getUserIdentifier(name);
+      if (identifier) {
+        user_details.value = identifier;
+        return;
+      }
+    }
     return $router.push({ path: "/identities" });
   }
 
@@ -158,8 +185,6 @@ onMounted(() => {
     name: $profile.name,
     pubkey: $route.query.pubkey,
     picture: $profile.picture ?? null,
-    website: $profile.website ?? null,
-    about: $profile.about ?? null,
     relays: [...$profile.relays],
   };
 });
