@@ -28,8 +28,8 @@
           unelevated
           text-color="primary"
           color="secondary"
-          label="Add Identity"
-          @click="handleBuy"
+          label="Check Identity"
+          @click="handleSearch"
           class="text-capitalize"
         />
       </template>
@@ -332,13 +332,12 @@ const handleSearch = async () => {
       $q.notify({
         message: "Identity available",
         color: "positive",
-        timeout: 2000,
+        caption: "Todo: details on price",
       });
     } else {
       $q.notify({
         message: "Identity not available",
         color: "negative",
-        timeout: 2000,
       });
     }
   } catch (error) {
