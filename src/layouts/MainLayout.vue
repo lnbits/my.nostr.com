@@ -22,10 +22,11 @@
                 <q-item clickable v-close-popup to="/identities">
                   <q-item-section>Identities</q-item-section>
                 </q-item>
-                <!-- <q-separator />
-                <q-item clickable v-close-popup>
-                  <q-item-section>Recent tabs</q-item-section>
+                <q-separator />
+                <q-item clickable v-close-popup to="/account">
+                  <q-item-section>Account</q-item-section>
                 </q-item>
+                <!-- 
                 <q-item clickable v-close-popup>
                   <q-item-section>History</q-item-section>
                 </q-item>
