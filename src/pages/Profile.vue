@@ -34,9 +34,11 @@
             </q-item-section>
             <q-item-section>
               <q-item-label>{{ user_details.name }}</q-item-label>
-              <q-item-label caption>{{ user_details.pubkey }}</q-item-label>
+              <q-item-label caption class="ellipsis">{{
+                user_details.pubkey
+              }}</q-item-label>
             </q-item-section>
-            <q-item-section side>
+            <!-- <q-item-section side>
               <q-btn
                 label="Add Photo"
                 class="text-capitalize"
@@ -45,7 +47,7 @@
                 text-color="primary"
                 style="max-width: 120px"
               ></q-btn>
-            </q-item-section>
+            </q-item-section> -->
           </q-item>
 
           <q-item class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
@@ -99,11 +101,14 @@
       </q-card-section>
       <q-card-actions align="right" class="q-ma-md">
         <q-btn
+          tag="a"
+          href="https://metadata.nostr.com"
+          target="_blank"
           rounded
           class="text-capitalize"
           color="secondary"
           text-color="primary"
-          label="Update User Info"
+          label="Edit User Info"
         />
       </q-card-actions>
     </q-card>
