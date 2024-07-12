@@ -10,9 +10,9 @@
       dark
       standout
       rounded
-      v-model.trim="handle"
+      v-model.trim="filterText"
       class="input q-mb-lg"
-      placeholder="Filter identities"
+      placeholder="Filter by identifier or public key"
       label-color="blue-grey-4"
       :input-style="{ fontSize: '22px' }"
       @keydown.enter.prevent="handleSearch"
@@ -21,8 +21,8 @@
         <NostrHeadIcon color="blue-grey-4" />
       </template>
       <template v-slot:append>
-        <!-- todo: v-if no result found -->
         <q-btn
+          v-if="filterText && identityNotOwned"
           rounded
           unelevated
           text-color="primary"
@@ -46,7 +46,7 @@
 
     <div v-if="identitiesDisplay" class="id-card row q-mt-md">
       <div
-        v-for="identity in identities"
+        v-for="identity in filteredIdentities"
         class="q-pa-sm col-xs-12 col-sm-6 col-md-4 col-lg-3"
       >
         <CardProfile
@@ -59,7 +59,7 @@
     </div>
     <div v-else>
       <q-list
-        v-for="identity in identities"
+        v-for="identity in filteredIdentities"
         class="nostr-card no-shadow q-ma-sm"
         bordered
       >
@@ -181,7 +181,7 @@
 import { useQuasar, copyToClipboard } from "quasar";
 import { useAppStore } from "src/stores/store";
 import { useNostrStore } from "src/stores/nostr";
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, watch } from "vue";
 import { saas } from "boot/saas";
 import { timeFromNow, getTagValues } from "src/boot/utils";
 // import { SimplePool } from "nostr-tools/pool";
@@ -196,11 +196,13 @@ const $nostr = useNostrStore();
 
 let paymentCheckInterval;
 
-const handle = ref("");
+const filterText = ref("");
 const handleData = ref({});
 const showSearch = ref(false);
 
 const identities = ref([]);
+const filteredIdentities = ref([]);
+const identityNotOwned = ref(true);
 const identitiesDisplay = ref(true);
 
 const dataDialog = ref(false);
@@ -217,6 +219,7 @@ const getIdentities = async () => {
     data.forEach((i) => {
       $nostr.addPubkey(i.pubkey);
     });
+    filteredIdentities.value = identities.value;
     console.log("Identities: ", data);
   } catch (error) {
     console.error("error", error);
@@ -255,7 +258,7 @@ const resetDataDialog = () => {
   dataDialog.value = false;
   paymentDetails.value = {};
   $store.buying = false;
-  $store.handle = "";
+  $store.filterText = "";
   if (paymentCheckInterval) {
     clearInterval(paymentCheckInterval);
     paymentCheckInterval = null;
@@ -294,10 +297,33 @@ const copyData = (data) => {
   });
 };
 
+const filterIdentifier = (id, filter) => {
+  if (!filterText.value) {
+    return true;
+  }
+  if (id.local_part.toLowerCase().indexOf(filter) !== -1) {
+    return true;
+  }
+  if (id.pubkey.toLowerCase().indexOf(filter) !== -1) {
+    return true;
+  }
+  return false;
+};
+
+watch(filterText, (n, o) => {
+  const filter = filterText.value.toLocaleLowerCase();
+  filteredIdentities.value = identities.value.filter((id) =>
+    filterIdentifier(id, filter)
+  );
+  identityNotOwned.value = !identities.value.find(
+    (id) => id.local_part.toLowerCase() === filter
+  );
+});
+
 const handleSearch = async () => {
   try {
-    const { data } = await saas.queryIdentifier(handle.value);
-    dialogHandle.value = handle.value;
+    const { data } = await saas.queryIdentifier(filterText.value);
+    dialogHandle.value = filterText.value;
     handleData.value = data;
     if (data.available) {
       $q.notify({
@@ -321,9 +347,9 @@ const handleSearch = async () => {
 
 const handleBuy = () => {
   dataDialog.value = true;
-  dialogHandle.value = handle.value;
+  dialogHandle.value = filterText.value;
   dialogHandleReadonly.value = true;
-  handle.value = "";
+  filterText.value = "";
   showSearch.value = false;
 };
 
@@ -353,7 +379,7 @@ const handleBuy = () => {
 onMounted(async () => {
   if ($store.buying) {
     dataDialog.value = true;
-    dialogHandle.value = $store.handle;
+    dialogHandle.value = $store.filterText;
     dialogHandleReadonly.value = true;
   }
   identities.value = [...$store.identities.values()];
