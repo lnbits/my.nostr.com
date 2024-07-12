@@ -276,7 +276,7 @@ const submitIdentityBuy = async () => {
       $q.notify({
         message: "Pay the invoice to complete the purchase",
         color: "positive",
-        position: "bottom",
+        position: "top",
         timeout: 5000,
       });
     }
@@ -309,7 +309,7 @@ const paymentChecker = async () => {
       $q.notify({
         message: "Payment successful",
         color: "positive",
-        position: "bottom",
+        position: "top",
         timeout: 2000,
       });
       resetDataDialog();
