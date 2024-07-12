@@ -378,11 +378,7 @@ const handleBuy = () => {
 // );
 
 onMounted(async () => {
-  if ($store.buying) {
-    dataDialog.value = true;
-    dialogHandle.value = $store.filterText;
-    dialogHandleReadonly.value = true;
-  }
+
   identities.value = [...$store.identities.values()];
   await getIdentities();
   // const events = await $nostr.pool.querySync([...$nostr.relays], {

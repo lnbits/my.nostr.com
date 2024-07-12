@@ -87,6 +87,7 @@
           <q-item-section avatar> </q-item-section>
           <q-item-section>
             <q-btn
+              @click="submitIdentityBuy(cartItem)"
               label="Show Invoice"
               class="text-capitalize float-left"
               rounded
@@ -94,13 +95,11 @@
               text-color="primary"
             ></q-btn>
           </q-item-section>
-          <q-item-section>
+          <q-item-section class="col-8">
             <!-- todo:find better way to ocupy this space -->
             <span>&nbsp;</span>
           </q-item-section>
-          <q-item-section>
-            <span>&nbsp;</span>
-          </q-item-section>
+
           <q-item-section side>
             {{ timeFromNow(cartItem.time * 1000) }}
           </q-item-section>
@@ -151,31 +150,6 @@
           ></q-btn>
         </div>
       </q-card>
-      <q-card v-else style="min-width: 350px">
-        <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">Buy Identity</div>
-          <q-space />
-          <q-btn icon="close" flat round dense @click="resetDataDialog" />
-        </q-card-section>
-
-        <q-card-section>
-          <q-input
-            v-model.trim="dialogHandle"
-            label="Identity"
-            :readonly="dialogHandleReadonly"
-          />
-          <q-input v-model.trim="dialogPubkey" label="Nostr Public Key" />
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn
-            flat
-            label="Submit"
-            color="primary"
-            @click="submitIdentityBuy"
-          />
-        </q-card-actions>
-      </q-card>
     </q-dialog>
   </q-page>
 </template>
@@ -220,7 +194,7 @@ const isSameYear = (y1, y2) => {
   return y1 === y2;
 };
 
-const getIdentities = async () => {
+const getIdentities = async (_new) => {
   try {
     const { data } = await saas.getUsrIdentities();
     identities.value = data.filter((i) => !i.active);
@@ -228,24 +202,29 @@ const getIdentities = async () => {
       $nostr.addPubkey(i.pubkey);
       i.years = 1;
     });
-    filteredIdentities.value = identities.value;
+    const pendingIdentifier = _new ? [{ local_part: _new , years: 1}] : [];
+    filteredIdentities.value = pendingIdentifier.concat(identities.value);
+
     console.log("Identities: ", data);
   } catch (error) {
     console.error("error", error);
   }
 };
 
-const submitIdentityBuy = async () => {
+const submitIdentityBuy = async (cartItem) => {
   try {
     const { data } = await saas.createIdentity(
-      dialogHandle.value,
-      dialogPubkey.value
+      cartItem.local_part,
+      cartItem.pubkey,
+      cartItem.years
     );
+
     console.log("Identity created: ", data);
     // resetDataDialog();
     // await getIdentities();
     if (data.payment_request) {
       paymentDetails.value = { ...data };
+      dataDialog.value = true;
       paymentCheckInterval = setInterval(
         async () => await paymentChecker(),
         5000
@@ -259,6 +238,11 @@ const submitIdentityBuy = async () => {
     }
   } catch (error) {
     console.error("Error buying identifier: ", error);
+    $q.notify({
+      message: "Failed to generate invoice",
+      color: "negative",
+      position: "bottom",
+    });
   }
 };
 
@@ -266,7 +250,6 @@ const resetDataDialog = () => {
   dialogHandle.value = dialogPubkey.value = "";
   dataDialog.value = false;
   paymentDetails.value = {};
-  $store.buying = false;
   $store.filterText = "";
   if (paymentCheckInterval) {
     clearInterval(paymentCheckInterval);
@@ -361,13 +344,8 @@ const handleBuy = () => {
 // );
 
 onMounted(async () => {
-  if ($store.buying) {
-    dataDialog.value = true;
-    dialogHandle.value = $store.filterText;
-    dialogHandleReadonly.value = true;
-  }
   identities.value = [...$store.identities.values()];
-  await getIdentities();
+  await getIdentities($store.newCartIdentifier);
   // const events = await $nostr.pool.querySync([...$nostr.relays], {
   //   authors: [...$nostr.pubkeys],
   //   kinds: [0, 10002],

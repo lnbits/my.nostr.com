@@ -97,7 +97,7 @@ const saas = {
 
     return response;
   },
-  createIdentity: async function (identifier, pubkey) {
+  createIdentity: async function (identifier, pubkey, years) {
     const response = await axios({
       method: "POST",
       url: `${this.url}/nostrnip5/api/v1/domain/${this.domain}/address`,
@@ -105,6 +105,7 @@ const saas = {
         domain_id: this.domain,
         local_part: identifier,
         pubkey: pubkey,
+        years: years // todo
       },
     });
 
