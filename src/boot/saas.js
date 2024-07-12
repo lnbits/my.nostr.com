@@ -59,10 +59,14 @@ const saas = {
     });
     return response;
   },
-  getUsrIdentities: async function () {
+  getUsrIdentities: async function (localPart) {
+    let url = `${this.url}/nostrnip5/api/v1/addresses/user`;
+    if (localPart) {
+      url += `?local_part=${localPart}`;
+    }
     const response = await axios({
       method: "GET",
-      url: `${this.url}/nostrnip5/api/v1/addresses/user`,
+      url,
     });
 
     return response;
