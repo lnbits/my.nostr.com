@@ -242,7 +242,7 @@
           ></circle>
         </g>
       </svg>
-      <router-view />
+      <router-view @get-ids="getIdentities" />
     </q-page-container>
   </q-layout>
 </template>
@@ -264,29 +264,34 @@ const $nostr = useNostrStore();
 onMounted(async () => {
   if (saas.username) {
     $store.username = saas.username;
-    await getIdentities();
+    try {
+      await getIdentities();
 
-    const events = await $nostr.pool.querySync([...$nostr.relays], {
-      authors: [...$nostr.pubkeys],
-      kinds: [0, 10002],
-    });
-    events.forEach((event) => {
-      switch (event.kind) {
-        case 0:
-          $nostr.addProfile(event);
-          break;
-        case 10002:
-          const relays = getTagValues(event, "r");
-          $nostr.addRelaysToProfile(event.pubkey, relays);
-          relays.forEach((r) => {
-            $nostr.addRelay(r);
-          });
+      const events = await $nostr.pool.querySync([...$nostr.relays], {
+        authors: [...$nostr.pubkeys],
+        kinds: [0, 10002],
+      });
+      events.forEach((event) => {
+        switch (event.kind) {
+          case 0:
+            $nostr.addProfile(event);
+            break;
+          case 10002:
+            const relays = getTagValues(event, "r");
+            $nostr.addRelaysToProfile(event.pubkey, relays);
+            relays.forEach((r) => {
+              $nostr.addRelay(r);
+            });
 
-          break;
-        default:
-          break;
-      }
-    });
+            break;
+          default:
+            break;
+        }
+      });
+      $nostr.initiated = true;
+    } catch (error) {
+      console.error("MainLayout Error", error);
+    }
   }
 });
 
@@ -330,6 +335,7 @@ async function getIdentities() {
       $store.addIdentity(i);
     });
     console.log("Identities: ", identities);
+    return;
   } catch (error) {
     console.error("error", error);
   }

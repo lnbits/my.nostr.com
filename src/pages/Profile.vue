@@ -1,4 +1,4 @@
-<template>
+<template v-if="loaded">
   <q-page class="q-pa-sm container">
     <div class="q-gutter-md">
       <q-breadcrumbs class="text-grey-4 q-mb-lg" active-color="secondary">
@@ -116,19 +116,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useNostrStore } from "src/stores/nostr";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 
 const $nostr = useNostrStore();
 const $route = useRoute();
-const $router = useRouter();
 
 const props = defineProps(["name"]);
 
 const user_details = ref({});
 const addRelayValue = ref("");
+
+watch(
+  () => $nostr.initiated,
+  () => {
+    fetchData();
+  }
+);
 
 const addRelayFn = () => {
   if (!addRelayValue.value) return;
@@ -143,13 +149,12 @@ const removeRelayFn = (relay) => {
   );
 };
 
-onMounted(() => {
-  if ($nostr.profiles.size === 0) {
-    return $router.push({ path: "/identities" });
+function fetchData() {
+  if ($nostr.profiles.size == 0) {
+    return;
   }
-
-  const $profile = $nostr.profiles.get($route.query.pubkey);
-  $router.replace({ query: null });
+  const pubkey = $nostr.getPubkeyById(props.name);
+  const $profile = $nostr.profiles.get(pubkey);
   user_details.value = {
     name: $profile.name,
     pubkey: $route.query.pubkey,
@@ -158,5 +163,9 @@ onMounted(() => {
     about: $profile.about ?? null,
     relays: [...$profile.relays],
   };
+}
+
+onMounted(() => {
+  fetchData();
 });
 </script>
