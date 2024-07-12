@@ -332,14 +332,12 @@ const handleSearch = async () => {
       $q.notify({
         message: "Identity available",
         color: "positive",
-        position: "top",
         timeout: 2000,
       });
     } else {
       $q.notify({
         message: "Identity not available",
         color: "negative",
-        position: "top",
         timeout: 2000,
       });
     }

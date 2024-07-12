@@ -105,6 +105,7 @@
           <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <q-item-section>
               <q-btn
+                @click="updateUserIdentifier"
                 rounded
                 class="text-capitalize"
                 color="secondary"
@@ -120,16 +121,19 @@
 </template>
 
 <script setup>
+import { useQuasar } from "quasar";
 import { ref, onMounted } from "vue";
-import { useNostrStore } from "src/stores/nostr";
 import { useRoute, useRouter } from "vue-router";
+
+import { useNostrStore } from "src/stores/nostr";
 import { saas } from "boot/saas";
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 
-const $nostr = useNostrStore();
+const $q = useQuasar();
 const $route = useRoute();
 const $router = useRouter();
 
+const $nostr = useNostrStore();
 const props = defineProps(["name"]);
 
 const user_details = ref({});
@@ -148,6 +152,27 @@ const removeRelayFn = (relay) => {
   );
 };
 
+const updateUserIdentifier = async () => {
+  try {
+    const { data } = await saas.updateIdentity(user_details.value.id, {
+      pubkey: user_details.value.pubkey,
+      relays: user_details.value.relays,
+    });
+    user_details.value = saas.mapAddressToProfile(data);
+    $q.notify({
+      message: "Changes saved!",
+      color: "positive",
+    });
+  } catch (error) {
+    console.error(error);
+    $q.notify({
+      message: "Failed to update identifer!",
+      color: "negative",
+      icon: "warning",
+    });
+  }
+};
+
 const getUserIdentifier = async (id) => {
   try {
     const { data } = await saas.getUsrIdentities(id);
@@ -156,38 +181,22 @@ const getUserIdentifier = async (id) => {
       return;
     }
 
-    const identifier = data[0];
-
-    return {
-      name: identifier.local_part,
-      pubkey: identifier.pubkey,
-      relays: identifier.config.relays,
-    };
+    const address = data[0];
+    return saas.mapAddressToProfile(address);
   } catch (error) {
     console.error("error", error);
   }
 };
 
 onMounted(async () => {
-  if ($nostr.profiles.size === 0) {
-    const name = $route.params["name"];
-    if (name) {
-      const identifier = await getUserIdentifier(name);
-      if (identifier) {
-        user_details.value = identifier;
-        return;
-      }
+  const name = $route.params["name"];
+  if (name) {
+    const identifier = await getUserIdentifier(name);
+    if (identifier) {
+      user_details.value = identifier;
+      return;
     }
-    return $router.push({ path: "/identities" });
   }
-
-  const $profile = $nostr.profiles.get($route.query.pubkey);
-  $router.replace({ query: null });
-  user_details.value = {
-    name: $profile.name,
-    pubkey: $route.query.pubkey,
-    picture: $profile.picture ?? null,
-    relays: [...$profile.relays],
-  };
+  return $router.push({ path: "/identities" });
 });
 </script>

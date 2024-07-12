@@ -71,6 +71,15 @@ const saas = {
 
     return response;
   },
+  updateIdentity: async function (addressId, data) {
+    const response = await axios({
+      method: "PUT",
+      url: `${this.url}/nostrnip5/api/v1/domain/${this.domain}/address/${addressId}`,
+      data,
+    });
+
+    return response;
+  },
   createIdentity: async function (identifier, pubkey) {
     const response = await axios({
       method: "POST",
@@ -91,6 +100,15 @@ const saas = {
     });
 
     return response;
+  },
+
+  mapAddressToProfile(address){
+    return {
+      id: address.id,
+      name: address.local_part,
+      pubkey: address.pubkey,
+      relays: address.config.relays,
+    };
   },
 
   mapErrorToString(error) {
