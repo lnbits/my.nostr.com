@@ -7,76 +7,42 @@
       </q-breadcrumbs>
     </div>
     <q-input
-      v-if="showSearch"
       dark
       standout
-      autofocus
       rounded
       v-model.trim="handle"
-      class="input q-pa-lg"
-      placeholder="@nostr.com"
+      class="input q-mb-lg"
+      placeholder="Filter identities"
       label-color="blue-grey-4"
       :input-style="{ fontSize: '22px' }"
       @keydown.enter.prevent="handleSearch"
-      bottom-slots
-      :hint="isValid"
     >
       <template v-slot:prepend>
         <NostrHeadIcon color="blue-grey-4" />
       </template>
       <template v-slot:append>
+        <!-- todo: v-if no result found -->
         <q-btn
-          v-if="
-            handleData.available == undefined ||
-            !handleData.available ||
-            dialogHandle != handle
-          "
           rounded
           unelevated
           text-color="primary"
           color="secondary"
-          label="Search"
-          @click="handleSearch"
-          class="text-capitalize"
-        />
-        <q-btn
-          v-else
-          rounded
-          unelevated
-          text-color="primary"
-          color="secondary"
-          label="Buy"
+          label="Add Identity"
           @click="handleBuy"
           class="text-capitalize"
         />
       </template>
-      <template v-slot:error>
-        Identity is not available. Try another.
-      </template>
-    </q-input>
-    <q-card
-      class="q-mt-lg no-shadow q-mb-lg"
-      :class="identitiesDisplay ? 'transparent' : ''"
-    >
-      <q-card-section class="row bg-white">
-        <q-space></q-space>
-        <q-checkbox
-          class="q-mr-lg"
-          left-label
-          v-model="identitiesDisplay"
-          checked-icon="list"
-          unchecked-icon="grid_view"
-        />
+      <template v-slot:after>
         <q-btn
-          class="text-capitalize"
-          outline
-          :label="showSearch ? 'Close Search' : 'Add Identity'"
+          @click="identitiesDisplay = !identitiesDisplay"
+          unelevated
+          text-color="secondary"
           color="primary"
-          @click="showSearch = !showSearch"
-        ></q-btn>
-      </q-card-section>
-      <q-separator></q-separator>
-    </q-card>
+          :icon="identitiesDisplay ? 'list' : 'grid_view'"
+        />
+      </template>
+      <template v-slot:error> Failed to filer. </template>
+    </q-input>
 
     <div v-if="identitiesDisplay" class="id-card row q-mt-md">
       <div
@@ -94,7 +60,7 @@
     <div v-else>
       <q-list
         v-for="identity in identities"
-        class="nostr-card no-shadow q-mb-md"
+        class="nostr-card no-shadow q-ma-sm"
         bordered
       >
         <q-item
@@ -233,13 +199,6 @@ let paymentCheckInterval;
 const handle = ref("");
 const handleData = ref({});
 const showSearch = ref(false);
-
-const isValid = computed(() => {
-  if (handleData.value.available === undefined) return "";
-  return handleData.value.available
-    ? `Identity is available`
-    : `Identity is not available`;
-});
 
 const identities = ref([]);
 const identitiesDisplay = ref(true);
