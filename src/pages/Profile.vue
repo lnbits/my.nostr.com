@@ -5,7 +5,6 @@
         <q-breadcrumbs-el icon="home" to="/" />
         <q-breadcrumbs-el
           label="Indentities"
-          icon="alternate_email"
           to="/identities"
         />
         <q-breadcrumbs-el :label="user_details.name" />
