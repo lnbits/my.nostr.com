@@ -151,10 +151,12 @@ const removeRelayFn = (relay) => {
 const getUserIdentifier = async (id) => {
   try {
     const { data } = await saas.getUsrIdentities(id);
-    const identifier = data[0];
-    if (!identifier) {
+
+    if (data.length !== 1) {
       return;
     }
+
+    const identifier = data[0];
 
     return {
       name: identifier.local_part,
