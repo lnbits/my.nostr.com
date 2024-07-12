@@ -55,11 +55,10 @@
       </template>
     </q-input>
     <q-card
-      class="q-mt-lg no-shadow"
+      class="q-mt-lg no-shadow q-mb-lg"
       :class="identitiesDisplay ? 'transparent' : ''"
     >
       <q-card-section class="row bg-white">
-        <div class="text-h6 text-weight-bolder text-grey-8">My Identities</div>
         <q-space></q-space>
         <q-checkbox
           class="q-mr-lg"
@@ -77,62 +76,69 @@
         ></q-btn>
       </q-card-section>
       <q-separator></q-separator>
-      <q-card-section>
-        <div v-if="identitiesDisplay" class="id-card row q-mt-md">
-          <div
-            v-for="identity in identities"
-            class="q-pa-sm col-xs-12 col-sm-6 col-md-4 col-lg-3"
-          >
-            <CardProfile
-              :name="identity.local_part"
-              :pubkey="identity.pubkey"
-              :time="identity.time"
-              :profile="$nostr.profiles.get(identity.pubkey)"
-            ></CardProfile>
-          </div>
-        </div>
-        <q-list v-else>
-          <q-item
-            clickable
-            v-ripple
-            v-for="identity in identities"
-            tag="a"
-            :href="`/identities/${identity.local_part}`"
-          >
-            <q-item-section avatar>
-              <q-avatar>
-                <q-img
-                  v-if="
-                    $nostr.profiles.has(identity.pubkey) &&
-                    $nostr.profiles.get(identity.pubkey).picture
-                  "
-                  :src="$nostr.profiles.get(identity.pubkey).picture"
-                  spinner-color="secondary"
-                  spinner-size="52px"
-                  :ratio="1"
-                />
-                <NostrHeadIcon v-else color="blue-grey-4" />
-              </q-avatar>
-            </q-item-section>
-
-            <q-item-section class="ellipsis">
-              <q-item-label lines="1"
-                >{{ identity.local_part }}@nostr.com</q-item-label
-              >
-              <q-item-label caption lines="2">
-                <span class="text-weight-bold">Pubkey:</span>
-                &nbsp;
-                <span>{{ identity.pubkey }}</span>
-              </q-item-label>
-            </q-item-section>
-
-            <q-item-section side top>
-              {{ timeFromNow(identity.time * 1000) }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-card-section>
     </q-card>
+
+    <div v-if="identitiesDisplay" class="id-card row q-mt-md">
+      <div
+        v-for="identity in identities"
+        class="q-pa-sm col-xs-12 col-sm-6 col-md-4 col-lg-3"
+      >
+        <CardProfile
+          :name="identity.local_part"
+          :pubkey="identity.pubkey"
+          :time="identity.time"
+          :profile="$nostr.profiles.get(identity.pubkey)"
+        ></CardProfile>
+      </div>
+    </div>
+    <div v-else>
+      <q-list
+        v-for="identity in identities"
+        class="nostr-card no-shadow q-mb-md"
+        bordered
+      >
+        <q-item
+          clickable
+          v-ripple
+          tag="a"
+          :href="`/identities/${identity.local_part}`"
+        >
+          <q-item-section avatar>
+            <q-avatar>
+              <q-img
+                v-if="
+                  $nostr.profiles.has(identity.pubkey) &&
+                  $nostr.profiles.get(identity.pubkey).picture
+                "
+                :src="$nostr.profiles.get(identity.pubkey).picture"
+                spinner-color="secondary"
+                spinner-size="52px"
+                :ratio="1"
+              />
+              <NostrHeadIcon v-else color="blue-grey-4" />
+            </q-avatar>
+          </q-item-section>
+
+          <q-item-section class="ellipsis">
+            <q-item-label
+              lines="1"
+              class="text-weight-bold text-white q-mb-md"
+              >{{ identity.local_part }}</q-item-label
+            >
+            <q-item-label caption lines="2">
+              <span class="text-weight-bold text-white">Pubkey:</span>
+              &nbsp;
+              <span class="text-white">{{ identity.pubkey }}</span>
+            </q-item-label>
+          </q-item-section>
+
+          <q-item-section side top>
+            {{ timeFromNow(identity.time * 1000) }}
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </div>
+
     <q-dialog
       v-model="dataDialog"
       :backdrop-filter="'blur(4px) saturate(150%)'"
