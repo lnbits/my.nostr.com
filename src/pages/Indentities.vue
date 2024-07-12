@@ -392,7 +392,7 @@ onMounted(async () => {
     dialogHandleReadonly.value = true;
   }
   identities.value = [...$store.identities.values()];
-  // await getIdentities();
+  await getIdentities();
   // const events = await $nostr.pool.querySync([...$nostr.relays], {
   //   authors: [...$nostr.pubkeys],
   //   kinds: [0, 10002],
