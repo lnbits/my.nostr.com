@@ -20,6 +20,7 @@
       <template v-slot:prepend>
         <NostrHeadIcon color="blue-grey-4" />
       </template>
+
       <template v-slot:append>
         <q-btn
           v-if="filterText && identityNotOwned"
@@ -32,6 +33,7 @@
           class="text-capitalize"
         />
       </template>
+
       <template v-slot:after>
         <q-btn
           @click="identitiesDisplay = !identitiesDisplay"
@@ -41,6 +43,7 @@
           :icon="identitiesDisplay ? 'list' : 'grid_view'"
         />
       </template>
+
       <template v-slot:error> Failed to filer. </template>
     </q-input>
 
@@ -416,6 +419,7 @@ onMounted(async () => {
     object-fit: contain;
   }
 }
+
 .id-card a {
   text-decoration: none;
 }

@@ -3,17 +3,36 @@
     <div class="q-gutter-md">
       <q-breadcrumbs class="text-grey-4 q-mb-lg" active-color="secondary">
         <q-breadcrumbs-el icon="home" to="/" />
-        <q-breadcrumbs-el
-          label="Indentities"
-          to="/identities"
-        />
+        <q-breadcrumbs-el label="Indentities" to="/identities" />
         <q-breadcrumbs-el :label="user_details.name" />
       </q-breadcrumbs>
     </div>
     <q-card class="nostr-card text-white no-shadow" bordered>
-      <q-card-section class="text-h6">
-        <div class="text-h6">Edit Profile</div>
-        <div class="text-subtitle2">Complete your Nostr profile</div>
+      <q-card-section>
+        <q-list dark class="row">
+          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <q-item-section>
+              <div>
+                <div class="text-h6">Identifier</div>
+                <div class="text-subtitle2">
+                  Edit your NIP05 identifier for nostr.com
+                </div>
+              </div>
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                type="a"
+                :href="`https://metadata.nostr.com?pubkey=${user_details.pubkey}`"
+                target="_blank"
+                label="Edit Nostr Profile"
+                class="text-capitalize"
+                rounded
+                color="secondary"
+                text-color="primary"
+              ></q-btn>
+            </q-item-section>
+          </q-item>
+        </q-list>
       </q-card-section>
       <q-card-section class="q-pa-sm">
         <q-list dark class="row">
@@ -35,43 +54,25 @@
               <q-item-label>{{ user_details.name }}</q-item-label>
               <q-item-label caption>{{ user_details.pubkey }}</q-item-label>
             </q-item-section>
-            <q-item-section side>
-              <q-btn
-                label="Add Photo"
-                class="text-capitalize"
-                rounded
-                color="secondary"
-                text-color="primary"
-                style="max-width: 120px"
-              ></q-btn>
-            </q-item-section>
           </q-item>
 
-          <q-item class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-            <q-item-section>
-              <q-input dark v-model="user_details.name" label="Name" />
-            </q-item-section>
-          </q-item>
-          <q-item class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-            <q-item-section>
-              <q-input dark v-model="user_details.website" label="Website" />
-            </q-item-section>
-          </q-item>
           <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <q-item-section>
               <q-input
                 dark
-                type="textarea"
-                v-model="user_details.about"
-                label="Bio"
+                standout
+                v-model="user_details.pubkey"
+                label="Public Key"
+                hint="Public key associated with this identifier. Hex or Npub format."
               />
             </q-item-section>
           </q-item>
-          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+
+          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12 q-mt-lg">
             <q-item-section>
               <q-input
                 dark
-                filled
+                standout
                 v-model="addRelayValue"
                 @keydown.enter="addRelayFn"
                 type="text"
@@ -80,30 +81,39 @@
               >
                 <q-btn @click="addRelayFn" dense flat icon="add"></q-btn>
               </q-input>
-              <div class="q-mt-md">
-                <q-chip
-                  v-for="relay in user_details.relays"
-                  :key="relay"
-                  removable
-                  @remove="removeRelayFn(relay)"
-                  color="primary"
-                  text-color="white"
-                >
-                  <span v-text="relay"></span>
-                </q-chip>
-              </div>
             </q-item-section>
           </q-item>
         </q-list>
       </q-card-section>
+      <q-card-section>
+        <div class="q-mt-md">
+          <q-chip
+            v-for="relay in user_details.relays"
+            :key="relay"
+            class="nostr-card"
+            removable
+            @remove="removeRelayFn(relay)"
+            color="primary"
+            text-color="white"
+          >
+            <span v-text="relay"></span>
+          </q-chip>
+        </div>
+      </q-card-section>
       <q-card-actions align="right" class="q-ma-md">
-        <q-btn
-          rounded
-          class="text-capitalize"
-          color="secondary"
-          text-color="primary"
-          label="Update User Info"
-        />
+        <q-list dark class="row">
+          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <q-item-section>
+              <q-btn
+                rounded
+                class="text-capitalize"
+                color="secondary"
+                text-color="primary"
+                label="Update NIP05"
+              />
+            </q-item-section>
+          </q-item>
+        </q-list>
       </q-card-actions>
     </q-card>
   </q-page>
