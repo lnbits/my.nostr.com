@@ -3,7 +3,7 @@
     <div class="q-gutter-md">
       <q-breadcrumbs class="text-grey-4 q-mb-lg" active-color="secondary">
         <q-breadcrumbs-el icon="home" to="/" />
-        <q-breadcrumbs-el label="Indentities" icon="alternate_email" />
+        <q-breadcrumbs-el label="Indentities" />
       </q-breadcrumbs>
     </div>
     <q-input
