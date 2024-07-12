@@ -13,7 +13,10 @@
         class="nostr-card no-shadow q-ma-lg"
         bordered
       >
-        <q-item clickable v-ripple>
+        <q-item-label header class="text-weight-bold text-white"
+          >Nostr NIP05 Identifier</q-item-label
+        >
+        <q-item>
           <q-item-section avatar>
             <q-avatar>
               <q-img
@@ -31,13 +34,10 @@
           </q-item-section>
 
           <q-item-section>
-            <q-item-label lines="1" class="text-weight-bold text-white q-mb-md"
-              >Nostr NIP05 Identifier</q-item-label
-            >
             <q-item-label caption lines="2">
-              <span class="text-weight-bold text-white">{{
-                cartItem.local_part
-              }}</span>
+              <span class="text-weight-bold text-white text-h6">
+                {{ cartItem.local_part }}</span
+              >
             </q-item-label>
           </q-item-section>
 
@@ -67,7 +67,41 @@
                 </q-item>
               </q-list>
             </q-btn-dropdown>
-            <span class="q-mt-lg">&nbsp</span>
+            <!-- <span class="q-mt-lg">&nbsp</span>
+            {{ timeFromNow(cartItem.time * 1000) }} -->
+          </q-item-section>
+        </q-item>
+        <q-item>
+          <q-item-section avatar> </q-item-section>
+          <q-item-section>
+            <q-input
+              dark
+              standout
+              v-model="cartItem.pubkey"
+              label="Public Key"
+              hint="Public key associated with this identifier. Hex or Npub format."
+            />
+          </q-item-section>
+        </q-item>
+        <q-item class="q-mt-md q-mb-sm">
+          <q-item-section avatar> </q-item-section>
+          <q-item-section>
+            <q-btn
+              label="Show Invoice"
+              class="text-capitalize float-left"
+              rounded
+              color="secondary"
+              text-color="primary"
+            ></q-btn>
+          </q-item-section>
+          <q-item-section>
+            <!-- todo:find better way to ocupy this space -->
+            <span>&nbsp;</span>
+          </q-item-section>
+          <q-item-section>
+            <span>&nbsp;</span>
+          </q-item-section>
+          <q-item-section side>
             {{ timeFromNow(cartItem.time * 1000) }}
           </q-item-section>
         </q-item>
