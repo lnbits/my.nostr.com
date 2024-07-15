@@ -71,6 +71,7 @@
           v-ripple
           tag="a"
           :href="`/identities/${identity.local_part}`"
+          class="q-py-md"
         >
           <q-item-section avatar>
             <q-avatar>
@@ -94,7 +95,7 @@
               class="text-weight-bold text-white q-mb-md"
               >{{ identity.local_part }}</q-item-label
             >
-            <q-item-label caption lines="2">
+            <q-item-label caption>
               <span class="text-weight-bold text-white">Pubkey:</span>
               &nbsp;
               <span class="text-white">{{ identity.pubkey }}</span>
