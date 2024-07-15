@@ -3,18 +3,36 @@
     <div class="q-gutter-md">
       <q-breadcrumbs class="text-grey-4 q-mb-lg" active-color="secondary">
         <q-breadcrumbs-el icon="home" to="/" />
-        <q-breadcrumbs-el
-          label="Indentities"
-          icon="alternate_email"
-          to="/identities"
-        />
+        <q-breadcrumbs-el label="Indentities" to="/identities" />
         <q-breadcrumbs-el :label="user_details.name" />
       </q-breadcrumbs>
     </div>
     <q-card class="nostr-card text-white no-shadow" bordered>
-      <q-card-section class="text-h6">
-        <div class="text-h6">Edit Profile</div>
-        <div class="text-subtitle2">Complete your Nostr profile</div>
+      <q-card-section>
+        <q-list dark class="row">
+          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <q-item-section>
+              <div>
+                <div class="text-h6">Identifier</div>
+                <div class="text-subtitle2">
+                  Edit your NIP05 identifier for nostr.com
+                </div>
+              </div>
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                type="a"
+                :href="`https://metadata.nostr.com?pubkey=${user_details.pubkey}`"
+                target="_blank"
+                label="Edit Nostr Profile"
+                class="text-capitalize"
+                rounded
+                color="secondary"
+                text-color="primary"
+              ></q-btn>
+            </q-item-section>
+          </q-item>
+        </q-list>
       </q-card-section>
       <q-card-section class="q-pa-sm">
         <q-list dark class="row">
@@ -39,31 +57,23 @@
             </q-item-section>
           </q-item>
 
-          <q-item class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-            <q-item-section>
-              <q-input dark v-model="user_details.name" label="Name" />
-            </q-item-section>
-          </q-item>
-          <q-item class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-            <q-item-section>
-              <q-input dark v-model="user_details.website" label="Website" />
-            </q-item-section>
-          </q-item>
           <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <q-item-section>
               <q-input
                 dark
-                type="textarea"
-                v-model="user_details.about"
-                label="Bio"
+                standout
+                v-model="user_details.pubkey"
+                label="Public Key"
+                hint="Public key associated with this identifier. Hex or Npub format."
               />
             </q-item-section>
           </q-item>
-          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+
+          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12 q-mt-lg">
             <q-item-section>
               <q-input
                 dark
-                filled
+                standout
                 v-model="addRelayValue"
                 @keydown.enter="addRelayFn"
                 type="text"
@@ -72,47 +82,58 @@
               >
                 <q-btn @click="addRelayFn" dense flat icon="add"></q-btn>
               </q-input>
-              <div class="q-mt-md">
-                <q-chip
-                  v-for="relay in user_details.relays"
-                  :key="relay"
-                  removable
-                  @remove="removeRelayFn(relay)"
-                  color="primary"
-                  text-color="white"
-                >
-                  <span v-text="relay"></span>
-                </q-chip>
-              </div>
             </q-item-section>
           </q-item>
         </q-list>
       </q-card-section>
+      <q-card-section>
+        <div class="q-mt-md">
+          <q-chip
+            v-for="relay in user_details.relays"
+            :key="relay"
+            class="nostr-card"
+            removable
+            @remove="removeRelayFn(relay)"
+            color="primary"
+            text-color="white"
+          >
+            <span v-text="relay"></span>
+          </q-chip>
+        </div>
+      </q-card-section>
       <q-card-actions align="right" class="q-ma-md">
-        <q-btn
-          tag="a"
-          href="https://metadata.nostr.com"
-          target="_blank"
-          rounded
-          class="text-capitalize"
-          color="secondary"
-          text-color="primary"
-          label="Edit User Info"
-        />
+        <q-list dark class="row">
+          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <q-item-section>
+              <q-btn
+                @click="updateUserIdentifier"
+                rounded
+                class="text-capitalize"
+                color="secondary"
+                text-color="primary"
+                label="Update NIP05"
+              />
+            </q-item-section>
+          </q-item>
+        </q-list>
       </q-card-actions>
     </q-card>
   </q-page>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { useQuasar } from "quasar";
+import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+
 import { useNostrStore } from "src/stores/nostr";
-import { useRoute } from "vue-router";
+import { saas } from "boot/saas";
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 
-const $nostr = useNostrStore();
+const $q = useQuasar();
 const $route = useRoute();
 
+const $nostr = useNostrStore();
 const props = defineProps(["name"]);
 
 const user_details = ref({});
@@ -138,23 +159,51 @@ const removeRelayFn = (relay) => {
   );
 };
 
-function fetchData() {
-  if ($nostr.profiles.size == 0) {
-    return;
+const updateUserIdentifier = async () => {
+  try {
+    const { data } = await saas.updateIdentity(user_details.value.id, {
+      pubkey: user_details.value.pubkey,
+      relays: user_details.value.relays,
+    });
+    user_details.value = saas.mapAddressToProfile(data);
+    $q.notify({
+      message: "Changes saved!",
+      color: "positive",
+    });
+  } catch (error) {
+    console.error(error);
+    $q.notify({
+      message: "Failed to update identifer!",
+      color: "negative",
+      icon: "warning",
+    });
   }
-  const pubkey = $nostr.getPubkeyById(props.name);
-  const $profile = $nostr.profiles.get(pubkey);
-  user_details.value = {
-    name: $profile.name,
-    pubkey: $route.query.pubkey,
-    picture: $profile.picture ?? null,
-    website: $profile.website ?? null,
-    about: $profile.about ?? null,
-    relays: [...$profile.relays],
-  };
-}
+};
 
-onMounted(() => {
-  fetchData();
+const getUserIdentifier = async (id) => {
+  try {
+    const { data } = await saas.getUsrIdentities(id);
+
+    if (data.length !== 1) {
+      return;
+    }
+
+    const address = data[0];
+    return saas.mapAddressToProfile(address);
+  } catch (error) {
+    console.error("error", error);
+  }
+};
+
+onMounted(async () => {
+  const name = $route.params["name"];
+  if (name) {
+    const identifier = await getUserIdentifier(name);
+    if (identifier) {
+      user_details.value = identifier;
+      return;
+    }
+  }
+  return $router.push({ path: "/identities" });
 });
 </script>
