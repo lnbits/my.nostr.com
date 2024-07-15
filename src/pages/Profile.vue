@@ -7,10 +7,28 @@
         <q-breadcrumbs-el :label="user_details.name" />
       </q-breadcrumbs>
     </div>
-    <q-card class="nostr-card text-white no-shadow" bordered>
+    <q-card class="nostr-card" bordered v-if="!user_details.name">
+      <q-item>
+        <q-item-section avatar>
+          <q-skeleton type="QAvatar" />
+        </q-item-section>
+
+        <q-item-section>
+          <q-item-label>
+            <q-skeleton type="text" />
+          </q-item-label>
+          <q-item-label caption>
+            <q-skeleton type="text" />
+          </q-item-label>
+        </q-item-section>
+      </q-item>
+
+      <q-skeleton height="200px" square />
+    </q-card>
+    <q-card v-else class="nostr-card text-white no-shadow" bordered>
       <q-card-section>
         <q-list dark class="row">
-          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+          <q-item class="col-12">
             <q-item-section>
               <div>
                 <div class="text-h6">Identifier</div>
@@ -36,7 +54,7 @@
       </q-card-section>
       <q-card-section class="q-pa-sm">
         <q-list dark class="row">
-          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+          <q-item class="col-12">
             <q-item-section side>
               <q-avatar size="100px">
                 <q-img
@@ -57,7 +75,7 @@
             </q-item-section>
           </q-item>
 
-          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+          <q-item class="col-12">
             <q-item-section>
               <q-input
                 dark
@@ -69,7 +87,7 @@
             </q-item-section>
           </q-item>
 
-          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12 q-mt-lg">
+          <q-item class="col-12 q-mt-lg">
             <q-item-section>
               <q-input
                 dark
@@ -103,7 +121,7 @@
       </q-card-section>
       <q-card-actions align="right" class="q-ma-md">
         <q-list dark class="row">
-          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+          <q-item class="col-12">
             <q-item-section>
               <q-btn
                 @click="updateUserIdentifier"

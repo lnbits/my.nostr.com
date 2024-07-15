@@ -95,7 +95,7 @@
               class="text-weight-bold text-white q-mb-md"
               >{{ identity.local_part }}</q-item-label
             >
-            <q-item-label caption>
+            <q-item-label caption lines="2">
               <span class="text-weight-bold text-white">Pubkey:</span>
               &nbsp;
               <span class="text-white">{{ identity.pubkey }}</span>
