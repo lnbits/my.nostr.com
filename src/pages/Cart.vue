@@ -88,7 +88,7 @@
             <q-btn
               @click="submitIdentityBuy(cartItem)"
               :label="priceLabel(cartItem.config)"
-              class="float-left"
+              class="text-capitalize float-left"
               rounded
               color="secondary"
               text-color="primary"
