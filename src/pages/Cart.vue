@@ -87,8 +87,8 @@
           <q-item-section>
             <q-btn
               @click="submitIdentityBuy(cartItem)"
-              label="Show Invoice"
-              class="text-capitalize float-left"
+              :label="priceLabel(cartItem.config)"
+              class="float-left"
               rounded
               color="secondary"
               text-color="primary"
@@ -193,9 +193,13 @@ const isSameYear = (y1, y2) => {
   return y1 === y2;
 };
 
+const priceLabel = (config) => {
+  return `Buy for ${config.price} ${config.currency}`;
+};
+
 const getIdentities = async (_new) => {
   try {
-    const { data } = await saas.getUsrIdentities({active:false});
+    const { data } = await saas.getUsrIdentities({ active: false });
     identities.value = data.filter((i) => !i.active);
     data.forEach((i) => {
       $nostr.addPubkey(i.pubkey);
