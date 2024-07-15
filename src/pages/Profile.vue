@@ -142,14 +142,12 @@
 <script setup>
 import { useQuasar } from "quasar";
 import { ref, onMounted, watch } from "vue";
-import { useRoute } from "vue-router";
 
 import { useNostrStore } from "src/stores/nostr";
 import { saas } from "boot/saas";
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 
 const $q = useQuasar();
-const $route = useRoute();
 
 const $nostr = useNostrStore();
 const props = defineProps(["name"]);

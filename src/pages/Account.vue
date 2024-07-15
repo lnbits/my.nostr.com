@@ -14,7 +14,6 @@
     <q-card class="nostr-card text-white no-shadow" bordered>
       <q-card-section class="text-h6">
         <div class="text-h6">Account</div>
-        <!-- <div class="text-subtitle2">Complete your Nostr profile</div> -->
       </q-card-section>
       <q-card-section class="q-pa-sm q-mb-md">
         <q-list dark class="row">
@@ -28,7 +27,6 @@
                   spinner-size="52px"
                   :ratio="1"
                 />
-                <!-- <img v-if="user_details.picture" :src="user_details.picture" /> -->
                 <NostrHeadIcon v-else color="secondary" />
               </q-avatar>
             </q-item-section>
@@ -73,7 +71,7 @@
                 ></q-input>
               </q-item-section>
             </q-item>
-            <q-item class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+            <q-item class="col-12">
               <q-item-section>
                 <q-input
                   dark
@@ -97,7 +95,7 @@
                 ></q-input>
               </q-item-section>
             </q-item>
-            <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <q-item class="col-12">
               <q-item-section>
                 <q-input
                   dark
@@ -138,7 +136,7 @@
           class="text-capitalize"
           color="secondary"
           text-color="primary"
-          :label="editAccount ? 'Update Account' : 'Edit Account'"
+          :label="editAccount ? 'Update Password' : 'Change Password'"
           :disable="
             (editAccount &&
               (!editPassword.newPassword || !editPassword.confirmPassword)) ||
