@@ -28,7 +28,6 @@
                   spinner-size="52px"
                   :ratio="1"
                 />
-                <!-- <img v-if="user_details.picture" :src="user_details.picture" /> -->
                 <NostrHeadIcon v-else color="secondary" />
               </q-avatar>
             </q-item-section>
@@ -38,16 +37,6 @@
                 user_details.pubkey
               }}</q-item-label>
             </q-item-section>
-            <!-- <q-item-section side>
-              <q-btn
-                label="Add Photo"
-                class="text-capitalize"
-                rounded
-                color="secondary"
-                text-color="primary"
-                style="max-width: 120px"
-              ></q-btn>
-            </q-item-section> -->
           </q-item>
 
           <q-item class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
