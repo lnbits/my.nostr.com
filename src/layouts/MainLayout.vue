@@ -242,7 +242,7 @@
           ></circle>
         </g>
       </svg>
-      <router-view @get-ids="getIdentities" />
+      <router-view />
     </q-page-container>
   </q-layout>
 </template>
