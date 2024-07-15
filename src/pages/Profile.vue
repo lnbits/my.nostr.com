@@ -123,8 +123,8 @@
 
 <script setup>
 import { useQuasar } from "quasar";
-import { ref, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { ref, onMounted, watch } from "vue";
+import { useRoute } from "vue-router";
 
 import { useNostrStore } from "src/stores/nostr";
 import { saas } from "boot/saas";
@@ -180,30 +180,23 @@ const updateUserIdentifier = async () => {
   }
 };
 
-const getUserIdentifier = async (id) => {
-  try {
-    const { data } = await saas.getUsrIdentities(id);
-
-    if (data.length !== 1) {
-      return;
-    }
-
-    const address = data[0];
-    return saas.mapAddressToProfile(address);
-  } catch (error) {
-    console.error("error", error);
+function fetchData() {
+  if ($nostr.profiles.size == 0) {
+    return;
   }
-};
+  const pubkey = $nostr.getPubkeyById(props.name);
+  const $profile = $nostr.profiles.get(pubkey);
+  user_details.value = {
+    name: $profile.name,
+    pubkey: pubkey,
+    picture: $profile.picture ?? null,
+    website: $profile.website ?? null,
+    about: $profile.about ?? null,
+    relays: [...$profile.relays],
+  };
+}
 
 onMounted(async () => {
-  const name = $route.params["name"];
-  if (name) {
-    const identifier = await getUserIdentifier(name);
-    if (identifier) {
-      user_details.value = identifier;
-      return;
-    }
-  }
-  return $router.push({ path: "/identities" });
+  fetchData();
 });
 </script>
