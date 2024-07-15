@@ -31,7 +31,17 @@
           <q-item class="col-12">
             <q-item-section>
               <div>
-                <div class="text-h6">Identifier</div>
+                <div class="text-h6">
+                  Identifier
+                  <q-badge
+                    class="nostr-card"
+                    removable
+                    color="primary"
+                    text-color="white"
+                    ><span v-if="user_details.active">Active</span>
+                    <span v-else>Inactive</span>
+                  </q-badge>
+                </div>
                 <div class="text-subtitle2">
                   Edit your NIP05 identifier for nostr.com
                 </div>
@@ -199,7 +209,7 @@ const updateUserIdentifier = async () => {
 
 const getUserIdentifier = async (id) => {
   try {
-    const { data } = await saas.getUsrIdentities({localPart: id});
+    const { data } = await saas.getUsrIdentities({ localPart: id });
 
     if (data.length !== 1) {
       return;

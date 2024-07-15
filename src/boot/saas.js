@@ -125,6 +125,7 @@ const saas = {
   mapAddressToProfile(address) {
     return {
       id: address.id,
+      active: address.active,
       name: address.local_part,
       pubkey: address.pubkey,
       relays: address.config.relays,
