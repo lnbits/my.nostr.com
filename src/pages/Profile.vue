@@ -229,7 +229,7 @@ onMounted(async () => {
     const identifier = await getUserIdentifier(name);
     if (identifier) {
       user_details.value = identifier;
-      console.log("user_details", user_details.value);
+      refreshFromNostr();
       return;
     }
   }
