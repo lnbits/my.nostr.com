@@ -76,14 +76,16 @@ const saas = {
     });
     return response;
   },
-  getUsrIdentities: async function (localPart) {
+  getUsrIdentities: async function ({ localPart, active } = {}) {
     let url = `${this.url}/nostrnip5/api/v1/addresses/user`;
-    if (localPart) {
-      url += `?local_part=${localPart}`;
-    }
+
     const response = await axios({
       method: "GET",
       url,
+      params: {
+        local_part: localPart,
+        active,
+      },
     });
 
     return response;
@@ -105,7 +107,7 @@ const saas = {
         domain_id: this.domain,
         local_part: identifier,
         pubkey: pubkey,
-        years: years // todo
+        years: years, // todo
       },
     });
 
@@ -120,7 +122,7 @@ const saas = {
     return response;
   },
 
-  mapAddressToProfile(address){
+  mapAddressToProfile(address) {
     return {
       id: address.id,
       name: address.local_part,

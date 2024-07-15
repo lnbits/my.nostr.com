@@ -67,8 +67,7 @@
                 </q-item>
               </q-list>
             </q-btn-dropdown>
-            <!-- <span class="q-mt-lg">&nbsp</span>
-            {{ timeFromNow(cartItem.time * 1000) }} -->
+            <!-- <span class="q-mt-lg">&nbsp</span> {{ timeFromNow(cartItem.time * 1000) }} -->
           </q-item-section>
         </q-item>
         <q-item>
@@ -196,13 +195,13 @@ const isSameYear = (y1, y2) => {
 
 const getIdentities = async (_new) => {
   try {
-    const { data } = await saas.getUsrIdentities();
+    const { data } = await saas.getUsrIdentities({active:false});
     identities.value = data.filter((i) => !i.active);
     data.forEach((i) => {
       $nostr.addPubkey(i.pubkey);
       i.years = 1;
     });
-    const pendingIdentifier = _new ? [{ local_part: _new , years: 1}] : [];
+    const pendingIdentifier = _new ? [{ local_part: _new, years: 1 }] : [];
     filteredIdentities.value = pendingIdentifier.concat(identities.value);
 
     console.log("Identities: ", data);
@@ -240,6 +239,7 @@ const submitIdentityBuy = async (cartItem) => {
     console.error("Error buying identifier: ", error);
     $q.notify({
       message: "Failed to generate invoice",
+      caption: error.response?.data?.detail,
       color: "negative",
       position: "bottom",
     });
