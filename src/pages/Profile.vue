@@ -142,14 +142,17 @@
 <script setup>
 import { useQuasar } from "quasar";
 import { ref, onMounted, watch } from "vue";
-
+import { useRoute, useRouter } from "vue-router";
 import { useNostrStore } from "src/stores/nostr";
+
 import { saas } from "boot/saas";
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 
 const $q = useQuasar();
-
+const $router = useRouter();
+const $route = useRoute();
 const $nostr = useNostrStore();
+
 const props = defineProps(["name"]);
 
 const user_details = ref({});
@@ -157,9 +160,7 @@ const addRelayValue = ref("");
 
 watch(
   () => $nostr.initiated,
-  () => {
-    fetchData();
-  }
+  () => refreshFromNostr()
 );
 
 const addRelayFn = () => {
@@ -196,23 +197,42 @@ const updateUserIdentifier = async () => {
   }
 };
 
-function fetchData() {
-  if ($nostr.profiles.size == 0) {
-    return;
+const getUserIdentifier = async (id) => {
+  try {
+    const { data } = await saas.getUsrIdentities(id);
+
+    if (data.length !== 1) {
+      return;
+    }
+
+    const address = data[0];
+    return saas.mapAddressToProfile(address);
+  } catch (error) {
+    console.error("error", error);
   }
-  const pubkey = $nostr.getPubkeyById(props.name);
-  const $profile = $nostr.profiles.get(pubkey);
-  user_details.value = {
-    name: $profile.name,
-    pubkey: pubkey,
-    picture: $profile.picture ?? null,
-    website: $profile.website ?? null,
-    about: $profile.about ?? null,
-    relays: [...$profile.relays],
-  };
+};
+
+function refreshFromNostr() {
+  const profile = $nostr.profiles.get(user_details.value.pubkey);
+  if (profile) {
+    user_details.value.picture = profile.picture;
+    user_details.value.relays = [
+      ...user_details.value.relays,
+      ...profile.relays,
+    ];
+  }
 }
 
 onMounted(async () => {
-  fetchData();
+  const name = props.name || $route.params.name;
+  if (name) {
+    const identifier = await getUserIdentifier(name);
+    if (identifier) {
+      user_details.value = identifier;
+      console.log("user_details", user_details.value);
+      return;
+    }
+  }
+  return $router.push({ path: "/identities" });
 });
 </script>
