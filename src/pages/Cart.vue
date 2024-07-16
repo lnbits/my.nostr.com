@@ -125,43 +125,43 @@
       v-model="dataDialog"
       :backdrop-filter="'blur(4px) saturate(150%)'"
     >
-      <q-card
-        v-if="paymentDetails?.payment_request"
-        style="width: 350px"
-        class="q-pa-md text-center"
-      >
-        <h6><span>Identity: </span><span v-text="dialogHandle"></span></h6>
-        <p class="caption">
-          Scan the QR code below using a lightning wallet to secure your Nostr
-          identity.
-        </p>
-        <div class="responsive">
-          <a :href="'lightning:' + paymentDetails.payment_request">
-            <vue-qrcode
-              :value="paymentDetails.payment_request"
-              :options="{ width: 500 }"
-            ></vue-qrcode>
-          </a>
-        </div>
-        <q-linear-progress indeterminate color="secondary" class="q-mt-sm" />
-        <div class="row q-mt-md">
-          <q-btn
-            rounded
-            unelevated
-            text-color="primary"
-            color="secondary"
-            @click="copyData(paymentDetails.payment_request)"
-            label="Copy Invoice"
-            class="text-capitalize"
-          ></q-btn>
-          <q-btn
-            @click="resetDataDialog"
-            flat
-            color="grey"
-            class="q-ml-auto text-capitalize"
-            label="Close"
-          ></q-btn>
-        </div>
+      <q-card style="width: 350px" class="q-pa-md text-center">
+        <q-card-section v-if="paymentDetails?.payment_request">
+          <p class="caption">
+            Scan the QR code below using a lightning wallet to secure your Nostr
+            identity.
+          </p>
+          <div class="responsive">
+            <a :href="'lightning:' + paymentDetails.payment_request">
+              <vue-qrcode
+                :value="paymentDetails.payment_request"
+                :options="{ width: 500 }"
+              ></vue-qrcode>
+            </a>
+          </div>
+        </q-card-section>
+        <q-card-section>
+          <q-linear-progress indeterminate color="secondary" class="q-mt-sm" />
+          <div class="row q-mt-md">
+            <q-btn
+              v-if="paymentDetails?.payment_request"
+              rounded
+              unelevated
+              text-color="primary"
+              color="secondary"
+              @click="copyData(paymentDetails.payment_request)"
+              label="Copy Invoice"
+              class="text-capitalize"
+            ></q-btn>
+            <q-btn
+              @click="resetDataDialog"
+              flat
+              color="grey"
+              class="q-ml-auto text-capitalize"
+              label="Close"
+            ></q-btn>
+          </div>
+        </q-card-section>
       </q-card>
     </q-dialog>
     <q-dialog v-model="showRemoveItemDialog">
@@ -244,6 +244,8 @@ const getIdentities = async () => {
 
 const submitIdentityBuy = async (cartItem) => {
   try {
+    dataDialog.value = true;
+    paymentDetails.value = {};
     const { data } = await saas.createIdentity(
       cartItem.local_part,
       cartItem.pubkey,
@@ -252,7 +254,7 @@ const submitIdentityBuy = async (cartItem) => {
 
     if (data.payment_request) {
       paymentDetails.value = { ...data };
-      dataDialog.value = true;
+
       subscribeToPaylinkWs(data.payment_hash);
       $q.notify({
         message: "Pay the invoice to complete the purchase",
@@ -286,7 +288,7 @@ const subscribeToPaylinkWs = (payment_hash) => {
         message: "Invoice Paid!",
       });
       resetDataDialog();
-      ws.close()
+      ws.close();
     }
   });
 };
