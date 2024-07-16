@@ -9,7 +9,7 @@
 
     <div>
       <q-list
-        v-for="cartItem in filteredIdentities"
+        v-for="cartItem in identities"
         class="nostr-card no-shadow q-ma-lg"
         bordered
       >
@@ -50,7 +50,7 @@
             <q-btn-dropdown
               class="text-capitalize"
               :label="
-                cartItem.years + ' Year' + (cartItem.years > 1 ? 's' : '')
+                cartItem.config.years + ' Year' + (cartItem.config.years > 1 ? 's' : '')
               "
               size="md"
               rounded
@@ -61,8 +61,8 @@
                 <q-item
                   clickable
                   v-close-popup
-                  @click="cartItem.years = year"
-                  :active="isSameYear(cartItem.years, year)"
+                  @click="cartItem.config.years = year"
+                  :active="isSameYear(cartItem.config.years, year)"
                   active-class="bg-teal-1 text-grey-8"
                   ><q-item-section>
                     <q-item-label
@@ -106,6 +106,7 @@
 
           <q-item-section side>
             <q-btn
+              @click="showRemoveItem(cartItem)"
               class="q-ml-auto float-right"
               icon="delete"
               label="Remove"
@@ -121,7 +122,6 @@
     <q-dialog
       v-model="dataDialog"
       :backdrop-filter="'blur(4px) saturate(150%)'"
-      @hide="resetDataDialog"
     >
       <q-card
         v-if="paymentDetails?.payment_request"
@@ -162,6 +162,34 @@
         </div>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="showRemoveItemDialog">
+      <q-card style="width: 350px" class="q-pa-md text-center">
+        <h6><span>Remove Cart Item </span></h6>
+        <p class="caption">
+          Are you sure you want to remove
+          <strong> <span v-text="cartItemToRemove.local_part"></span></strong>?
+        </p>
+
+        <div class="row q-mt-md">
+          <q-btn
+            @click="removeCartItem"
+            rounded
+            unelevated
+            text-color="primary"
+            color="red"
+            label="Remove Item"
+            class="text-capitalize"
+          ></q-btn>
+          <q-btn
+            flat
+            v-close-popup
+            color="grey"
+            class="q-ml-auto text-capitalize"
+            label="Cancel"
+          ></q-btn>
+        </div>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -182,26 +210,20 @@ const $nostr = useNostrStore();
 
 let paymentCheckInterval;
 
-const filterText = ref("");
-const handleData = ref({});
-const showSearch = ref(false);
 
+// # todo: get from domain
 const allowedYearsToBuy = ref([1, 2, 3, 4, 5]);
 
 const identities = ref([]);
-const filteredIdentities = ref([]);
-const identityNotOwned = ref(true);
-const identitiesDisplay = ref(true);
 
 const dataDialog = ref(false);
 const dialogHandle = ref("");
-const dialogPubkey = ref("");
-const dialogHandleReadonly = ref(false);
+const showRemoveItemDialog = ref(false);
+const cartItemToRemove = ref(null);
 
 const paymentDetails = ref({});
 
 const isSameYear = (y1, y2) => {
-  console.log("### y1", y1, y2, y1 === y2);
   return y1 === y2;
 };
 
@@ -209,23 +231,15 @@ const priceLabel = (config) => {
   return `Buy for ${config.price} ${config.currency}`;
 };
 
-const getIdentities = async (_new) => {
+const getIdentities = async () => {
   try {
     const { data } = await saas.getUsrIdentities({ active: false });
-    identities.value = data.filter((i) => !i.active);
-    data.forEach((i) => {
-      $nostr.addPubkey(i.pubkey);
-      i.years = 1;
-    });
-    _new = null;
-    const pendingIdentifier = _new ? [{ local_part: _new, years: 1 }] : [];
-    filteredIdentities.value = pendingIdentifier.concat(identities.value);
-
-    console.log("Identities: ", data);
+    identities.value = data
   } catch (error) {
     console.error("error", error);
   }
 };
+
 
 const submitIdentityBuy = async (cartItem) => {
   try {
@@ -251,7 +265,9 @@ const submitIdentityBuy = async (cartItem) => {
         position: "bottom",
         timeout: 5000,
       });
+
     }
+    return data
   } catch (error) {
     console.error("Error buying identifier: ", error);
     $q.notify({
@@ -297,6 +313,34 @@ const paymentChecker = async () => {
   }
 };
 
+const showRemoveItem = (cartItem) => {
+  cartItemToRemove.value = cartItem;
+  showRemoveItemDialog.value = true;
+};
+
+const removeCartItem = async () => {
+  showRemoveItemDialog.value = false;
+  try {
+    await saas.deleteIdentity(cartItemToRemove.value.id);
+
+    identities.value = identities.value.filter(
+      (i) => i.id !== cartItemToRemove.value.id
+    );
+    $q.notify({
+      message: "Item removed",
+      color: "positive",
+    });
+  } catch (error) {
+    console.error(error);
+    $q.notify({
+      message: "Failed to remove item",
+      caption: error.response?.data?.detail,
+      color: "negative",
+      position: "bottom",
+    });
+  }
+};
+
 const copyData = (data) => {
   copyToClipboard(data);
 
@@ -306,34 +350,15 @@ const copyData = (data) => {
   });
 };
 
-const filterIdentifier = (id, filter) => {
-  if (!filterText.value) {
-    return true;
-  }
-  if (id.local_part.toLowerCase().indexOf(filter) !== -1) {
-    return true;
-  }
-  if (id.pubkey.toLowerCase().indexOf(filter) !== -1) {
-    return true;
-  }
-  return false;
-};
-
-watch(filterText, (n, o) => {
-  const filter = filterText.value.toLocaleLowerCase();
-  filteredIdentities.value = identities.value.filter((id) =>
-    filterIdentifier(id, filter)
-  );
-  identityNotOwned.value = !identities.value.find(
-    (id) => id.local_part.toLowerCase() === filter
-  );
-});
 
 onMounted(async () => {
   identities.value = [...$store.identities.values()];
   await getIdentities();
   if ($store.newCartIdentifier) {
-    await submitIdentityBuy({ local_part: $store.newCartIdentifier });
+    console.log("#### 1 identities.value", identities.value.length)
+    const newIdentity = await submitIdentityBuy({ local_part: $store.newCartIdentifier });
+    identities.value.unshift(newIdentity)
+    console.log("#### 2 identities.value", identities.value.length)
   }
 });
 </script>

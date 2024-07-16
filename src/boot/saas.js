@@ -99,6 +99,14 @@ const saas = {
 
     return response;
   },
+  deleteIdentity: async function (addressId) {
+    const response = await axios({
+      method: "DELETE",
+      url: `${this.url}/nostrnip5/api/v1/address/${this.domain}/${addressId}`,
+    });
+
+    return response;
+  },
   createIdentity: async function (identifier, pubkey, years) {
     const response = await axios({
       method: "POST",
