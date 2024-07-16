@@ -50,7 +50,9 @@
             <q-btn-dropdown
               class="text-capitalize"
               :label="
-                cartItem.config.years + ' Year' + (cartItem.config.years > 1 ? 's' : '')
+                cartItem.config.years +
+                ' Year' +
+                (cartItem.config.years > 1 ? 's' : '')
               "
               size="md"
               rounded
@@ -197,7 +199,7 @@
 import { useQuasar, copyToClipboard } from "quasar";
 import { useAppStore } from "src/stores/store";
 import { useNostrStore } from "src/stores/nostr";
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref } from "vue";
 import { saas } from "boot/saas";
 import { timeFromNow } from "src/boot/utils";
 
@@ -209,7 +211,6 @@ const $store = useAppStore();
 const $nostr = useNostrStore();
 
 let paymentCheckInterval;
-
 
 // # todo: get from domain
 const allowedYearsToBuy = ref([1, 2, 3, 4, 5]);
@@ -228,30 +229,27 @@ const isSameYear = (y1, y2) => {
 };
 
 const priceLabel = (config) => {
+  // todo: update pric based on years
   return `Buy for ${config.price} ${config.currency}`;
 };
 
 const getIdentities = async () => {
   try {
     const { data } = await saas.getUsrIdentities({ active: false });
-    identities.value = data
+    identities.value = data;
   } catch (error) {
     console.error("error", error);
   }
 };
-
 
 const submitIdentityBuy = async (cartItem) => {
   try {
     const { data } = await saas.createIdentity(
       cartItem.local_part,
       cartItem.pubkey,
-      cartItem.years
+      cartItem.config?.years
     );
 
-    console.log("Identity created: ", data);
-    // resetDataDialog();
-    // await getIdentities();
     if (data.payment_request) {
       paymentDetails.value = { ...data };
       dataDialog.value = true;
@@ -265,9 +263,8 @@ const submitIdentityBuy = async (cartItem) => {
         position: "bottom",
         timeout: 5000,
       });
-
     }
-    return data
+    return data;
   } catch (error) {
     console.error("Error buying identifier: ", error);
     $q.notify({
@@ -350,15 +347,14 @@ const copyData = (data) => {
   });
 };
 
-
 onMounted(async () => {
   identities.value = [...$store.identities.values()];
   await getIdentities();
   if ($store.newCartIdentifier) {
-    console.log("#### 1 identities.value", identities.value.length)
-    const newIdentity = await submitIdentityBuy({ local_part: $store.newCartIdentifier });
-    identities.value.unshift(newIdentity)
-    console.log("#### 2 identities.value", identities.value.length)
+    const newIdentity = await submitIdentityBuy({
+      local_part: $store.newCartIdentifier,
+    });
+    identities.value.unshift(newIdentity);
   }
 });
 </script>
