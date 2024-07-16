@@ -25,6 +25,12 @@ const routes = [
         component: () => import("pages/Profile.vue"),
         props: true,
       },
+      {
+        name: "Pubkey",
+        path: "/pubkey/:pubkey",
+        component: () => import("pages/IdentifiersByPubkey.vue"),
+        props: true,
+      },
 
       // Not completed yet
       // {path: '/Taskboard', component: () => import('pages/TaskBoard.vue')},
