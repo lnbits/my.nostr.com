@@ -185,10 +185,9 @@
 import { useQuasar, copyToClipboard } from "quasar";
 import { useAppStore } from "src/stores/store";
 import { useNostrStore } from "src/stores/nostr";
-import { onMounted, ref, computed, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { saas } from "boot/saas";
-import { timeFromNow, getTagValues } from "src/boot/utils";
-// import { SimplePool } from "nostr-tools/pool";
+import { timeFromNow } from "src/boot/utils";
 
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 import CardProfile from "components/cards/CardProfile.vue";
@@ -237,8 +236,7 @@ const submitIdentityBuy = async () => {
       dialogPubkey.value
     );
     console.log("Identity created: ", data);
-    // resetDataDialog();
-    // await getIdentities();
+
     if (data.payment_request) {
       paymentDetails.value = { ...data };
       paymentCheckInterval = setInterval(
