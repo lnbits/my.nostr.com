@@ -42,8 +42,16 @@
                     <span v-else>Inactive</span>
                   </q-badge>
                 </div>
-                <div class="text-subtitle2">
-                  Edit your NIP05 identifier for nostr.com
+
+                <div v-if="user_details.expiresAt" class="text-caption">
+                  Expires in
+                  <span
+                    v-text="
+                      new Date(
+                        user_details.expiresAt * 1000
+                      ).toLocaleDateString()
+                    "
+                  ></span>
                 </div>
               </div>
             </q-item-section>
@@ -129,7 +137,7 @@
           </q-chip>
         </div>
       </q-card-section>
-      <q-card-actions align="right" class="q-ma-md">
+      <q-card-actions>
         <q-list dark class="row">
           <q-item class="col-12">
             <q-item-section>
@@ -156,6 +164,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useNostrStore } from "src/stores/nostr";
 
 import { saas } from "boot/saas";
+import { secondsToDhm } from "src/boot/utils";
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 
 const $q = useQuasar();

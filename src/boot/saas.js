@@ -107,7 +107,8 @@ const saas = {
 
     return response;
   },
-  createIdentity: async function (identifier, pubkey, years) {
+  createIdentity: async function (identifier, pubkey, years, createInvoice) {
+    // todo: extract object
     const response = await axios({
       method: "POST",
       url: `${this.url}/nostrnip5/api/v1/domain/${this.domain}/address`,
@@ -116,6 +117,7 @@ const saas = {
         local_part: identifier,
         pubkey: pubkey,
         years: years,
+        create_invoice: createInvoice
       },
     });
 
@@ -137,6 +139,7 @@ const saas = {
       name: address.local_part,
       pubkey: address.pubkey,
       relays: address.config.relays,
+      expiresAt: address.expires_at,
     };
   },
 

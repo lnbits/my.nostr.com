@@ -256,7 +256,8 @@ const submitIdentityBuy = async (cartItem) => {
     const { data } = await saas.createIdentity(
       cartItem.local_part,
       cartItem.pubkey,
-      cartItem.config?.years
+      cartItem.config?.years,
+      true
     );
 
     if (data.payment_request) {
