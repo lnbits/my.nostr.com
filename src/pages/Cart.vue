@@ -63,7 +63,7 @@
                 <q-item
                   clickable
                   v-close-popup
-                  @click="cartItem.config.years = year"
+                  @click="getPriceByYear(cartItem, year)"
                   :active="isSameYear(cartItem.config.years, year)"
                   active-class="bg-teal-1 text-grey-8"
                   ><q-item-section>
@@ -223,6 +223,17 @@ const paymentDetails = ref({});
 
 const isSameYear = (y1, y2) => {
   return y1 === y2;
+};
+
+const getPriceByYear = async (cartItem, year) => {
+  cartItem.config.years = year;
+  const { data } = await saas.createIdentity(
+    cartItem.local_part,
+    cartItem.pubkey,
+    cartItem.config.years
+  );
+
+  Object.assign(cartItem, data);
 };
 
 const priceLabel = (config) => {
