@@ -210,15 +210,12 @@ const $q = useQuasar();
 const $store = useAppStore();
 const $nostr = useNostrStore();
 
-let paymentCheckInterval;
-
 // # todo: get from domain
 const allowedYearsToBuy = ref([1, 2, 3, 4, 5]);
 
 const identities = ref([]);
 
 const dataDialog = ref(false);
-const dialogHandle = ref("");
 const showRemoveItemDialog = ref(false);
 const cartItemToRemove = ref(null);
 
@@ -244,7 +241,9 @@ const getIdentities = async () => {
 
 const submitIdentityBuy = async (cartItem) => {
   try {
-    dataDialog.value = true;
+    if (cartItem.pubkey) {
+      dataDialog.value = true;
+    }
     paymentDetails.value = {};
     const { data } = await saas.createIdentity(
       cartItem.local_part,
@@ -339,10 +338,9 @@ onMounted(async () => {
   identities.value = [...$store.identities.values()];
   await getIdentities();
   if ($store.newCartIdentifier) {
-    const newIdentity = await submitIdentityBuy({
-      local_part: $store.newCartIdentifier,
-    });
-    identities.value.unshift(newIdentity);
+    const { data } = await saas.createIdentity($store.newCartIdentifier);
+    identities.value = identities.value.filter((i) => i.id !== data.id);
+    identities.value.unshift(data);
   }
 });
 </script>
