@@ -25,6 +25,7 @@
                 <q-separator />
                 <q-item clickable v-close-popup to="/account">
                   <q-item-section>Account</q-item-section>
+                </q-item>
                 <q-item clickable v-close-popup to="/cart">
                   <q-item-section>Cart</q-item-section>
                 </q-item>
