@@ -31,7 +31,12 @@ const routes = [
         component: () => import("pages/IdentifiersByPubkey.vue"),
         props: true,
       },
-
+      {
+        name: "Cart",
+        path: "/cart",
+        component: () => import("pages/Cart.vue"),
+        props: true,
+      }
       // Not completed yet
       // {path: '/Taskboard', component: () => import('pages/TaskBoard.vue')},
     ],
