@@ -59,7 +59,13 @@
               color="secondary"
               text-color="primary"
             >
-              <q-list v-for="(year, index) in allowedYearsToBuy" :key="index">
+              <q-list
+                v-for="(year, index) in Array.from(
+                  { length: cartItem.config.max_years },
+                  (_, i) => i + 1
+                )"
+                :key="index"
+              >
                 <q-item
                   clickable
                   v-close-popup
@@ -93,7 +99,7 @@
           <q-item-section>
             <q-btn
               @click="submitIdentityBuy(cartItem)"
-              :label="priceLabel(cartItem.config)"
+              :label="`Buy for ${cartItem.config.price} ${cartItem.config.currency}`"
               class="text-capitalize float-left"
               :disabled="!cartItem.pubkey"
               rounded
@@ -210,9 +216,6 @@ const $q = useQuasar();
 const $store = useAppStore();
 const $nostr = useNostrStore();
 
-// # todo: get from domain
-const allowedYearsToBuy = ref([1, 2, 3, 4, 5]);
-
 const identities = ref([]);
 
 const dataDialog = ref(false);
@@ -236,11 +239,6 @@ const getPriceByYear = async (cartItem, year) => {
   Object.assign(cartItem, data);
 };
 
-const priceLabel = (config) => {
-  // todo: update pric based on years
-  return `Buy for ${config.price} ${config.currency}`;
-};
-
 const getIdentities = async () => {
   try {
     const { data } = await saas.getUsrIdentities({ active: false });
@@ -252,9 +250,8 @@ const getIdentities = async () => {
 
 const submitIdentityBuy = async (cartItem) => {
   try {
-    if (cartItem.pubkey) {
-      dataDialog.value = true;
-    }
+    dataDialog.value = true;
+
     paymentDetails.value = {};
     const { data } = await saas.createIdentity(
       cartItem.local_part,
@@ -280,7 +277,6 @@ const submitIdentityBuy = async (cartItem) => {
       message: "Failed to generate invoice",
       caption: error.response?.data?.detail,
       color: "negative",
-      position: "bottom",
     });
   }
 };
