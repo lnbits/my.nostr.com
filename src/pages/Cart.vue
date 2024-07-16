@@ -13,9 +13,14 @@
         class="nostr-card no-shadow q-ma-lg"
         bordered
       >
-        <q-item-label header class="text-weight-bold text-white"
-          >Nostr NIP05 Identifier</q-item-label
-        >
+        <q-item-label header>
+          <span class="text-weight-bold text-white"
+            >Nostr NIP05 Identifier</span
+          >
+          <span class="float-right">{{
+            timeFromNow(cartItem.time * 1000)
+          }}</span>
+        </q-item-label>
         <q-item>
           <q-item-section avatar>
             <q-avatar>
@@ -67,7 +72,6 @@
                 </q-item>
               </q-list>
             </q-btn-dropdown>
-            <!-- <span class="q-mt-lg">&nbsp</span> {{ timeFromNow(cartItem.time * 1000) }} -->
           </q-item-section>
         </q-item>
         <q-item>
@@ -89,6 +93,7 @@
               @click="submitIdentityBuy(cartItem)"
               :label="priceLabel(cartItem.config)"
               class="text-capitalize float-left"
+              :disabled="!cartItem.pubkey"
               rounded
               color="secondary"
               text-color="primary"
@@ -100,7 +105,14 @@
           </q-item-section>
 
           <q-item-section side>
-            {{ timeFromNow(cartItem.time * 1000) }}
+            <q-btn
+              class="q-ml-auto float-right"
+              icon="delete"
+              label="Remove"
+              color="grey"
+              flat
+              dense
+            />
           </q-item-section>
         </q-item>
       </q-list>
@@ -205,6 +217,7 @@ const getIdentities = async (_new) => {
       $nostr.addPubkey(i.pubkey);
       i.years = 1;
     });
+    _new = null;
     const pendingIdentifier = _new ? [{ local_part: _new, years: 1 }] : [];
     filteredIdentities.value = pendingIdentifier.concat(identities.value);
 
@@ -316,61 +329,12 @@ watch(filterText, (n, o) => {
   );
 });
 
-const handleBuy = () => {
-  dataDialog.value = true;
-  dialogHandle.value = filterText.value;
-  dialogHandleReadonly.value = true;
-  filterText.value = "";
-  showSearch.value = false;
-};
-
-// NOSTR
-// TODO: MOVE/ABSTRACT TO OTHER FILE
-
-// const pool = new SimplePool();
-
-// let h = pool.subscribeMany(
-//   $nostr.relays,
-//   [
-//     {
-//       authors: $nostr.pubkeys,
-//       kinds: [0],
-//     },
-//   ],
-//   {
-//     onevent(event) {
-//       console.log("event", event);
-//     },
-//     // oneose() {
-//     //   h.close();
-//     // },
-//   }
-// );
-
 onMounted(async () => {
   identities.value = [...$store.identities.values()];
-  await getIdentities($store.newCartIdentifier);
-  // const events = await $nostr.pool.querySync([...$nostr.relays], {
-  //   authors: [...$nostr.pubkeys],
-  //   kinds: [0, 10002],
-  // });
-  // events.forEach((event) => {
-  //   switch (event.kind) {
-  //     case 0:
-  //       $nostr.addProfile(event);
-  //       break;
-  //     case 10002:
-  //       const relays = getTagValues(event, "r");
-  //       $nostr.addRelaysToProfile(event.pubkey, relays);
-  //       relays.forEach((r) => {
-  //         $nostr.addRelay(r);
-  //       });
-
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // });
+  await getIdentities();
+  if ($store.newCartIdentifier) {
+    await submitIdentityBuy({ local_part: $store.newCartIdentifier });
+  }
 });
 </script>
 

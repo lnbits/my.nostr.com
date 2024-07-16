@@ -107,7 +107,7 @@ const saas = {
         domain_id: this.domain,
         local_part: identifier,
         pubkey: pubkey,
-        years: years, // todo
+        years: years,
       },
     });
 
