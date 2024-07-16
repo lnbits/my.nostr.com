@@ -218,7 +218,7 @@ function refreshFromNostr() {
     user_details.value.picture = profile.picture;
     user_details.value.relays = [
       ...user_details.value.relays,
-      ...profile.relays,
+      ...(profile.relays ? profile.relays : []),
     ];
   }
 }

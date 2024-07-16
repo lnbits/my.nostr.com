@@ -288,9 +288,10 @@ onMounted(async () => {
             break;
         }
       });
-      $nostr.initiated = true;
     } catch (error) {
       console.error("MainLayout Error", error);
+    } finally {
+      $nostr.initiated = true;
     }
   }
 });
