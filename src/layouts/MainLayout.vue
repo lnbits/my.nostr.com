@@ -300,14 +300,6 @@ const home = () => {
   $router.push("/");
 };
 
-// const goToLogin = () => {
-//   $router.push("/login");
-// };
-
-// const goToRegister = () => {
-//   $router.push("/login");
-// };
-
 const logout = async () => {
   try {
     await saas.logout();

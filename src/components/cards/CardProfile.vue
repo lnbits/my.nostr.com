@@ -27,7 +27,6 @@
         </div>
       </q-card-section>
     </q-card>
-    <!-- </a> -->
   </router-link>
 </template>
 
