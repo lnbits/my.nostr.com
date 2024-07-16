@@ -253,10 +253,7 @@ const submitIdentityBuy = async (cartItem) => {
     if (data.payment_request) {
       paymentDetails.value = { ...data };
       dataDialog.value = true;
-      paymentCheckInterval = setInterval(
-        async () => await paymentChecker(),
-        5000
-      );
+      subscribeToPaylinkWs(data.payment_hash);
       $q.notify({
         message: "Pay the invoice to complete the purchase",
         color: "positive",
@@ -266,7 +263,7 @@ const submitIdentityBuy = async (cartItem) => {
     }
     return data;
   } catch (error) {
-    console.error("Error buying identifier: ", error);
+    console.error(error);
     $q.notify({
       message: "Failed to generate invoice",
       caption: error.response?.data?.detail,
@@ -276,38 +273,27 @@ const submitIdentityBuy = async (cartItem) => {
   }
 };
 
-const resetDataDialog = () => {
-  dialogHandle.value = dialogPubkey.value = "";
-  dataDialog.value = false;
-  paymentDetails.value = {};
-  $store.filterText = "";
-  if (paymentCheckInterval) {
-    clearInterval(paymentCheckInterval);
-    paymentCheckInterval = null;
-  }
-};
-
-const paymentChecker = async () => {
-  try {
-    const { data } = await saas.checkIdentityPayment(
-      paymentDetails.value.payment_hash
-    );
-    console.log("Payment status: ", data);
-    if (data.paid) {
-      clearInterval(paymentCheckInterval);
-      paymentCheckInterval = null;
+const subscribeToPaylinkWs = (payment_hash) => {
+  const url = new URL(window.location);
+  url.protocol = url.protocol === "https:" ? "wss" : "ws";
+  url.pathname = `/api/v1/ws/${payment_hash}`;
+  const ws = new WebSocket(url);
+  ws.addEventListener("message", async ({ data }) => {
+    const resp = JSON.parse(data);
+    if (!resp.pending || resp.paid) {
       $q.notify({
-        message: "Payment successful",
-        color: "positive",
-        position: "bottom",
-        timeout: 2000,
+        type: "positive",
+        message: "Invoice Paid!",
       });
       resetDataDialog();
-      await getIdentities();
+      ws.close()
     }
-  } catch (error) {
-    console.error("Error checking payment: ", error);
-  }
+  });
+};
+
+const resetDataDialog = () => {
+  dataDialog.value = false;
+  paymentDetails.value = {};
 };
 
 const showRemoveItem = (cartItem) => {
