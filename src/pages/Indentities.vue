@@ -354,29 +354,6 @@ const handleBuy = () => {
   showSearch.value = false;
 };
 
-// NOSTR
-// TODO: MOVE/ABSTRACT TO OTHER FILE
-
-// const pool = new SimplePool();
-
-// let h = pool.subscribeMany(
-//   $nostr.relays,
-//   [
-//     {
-//       authors: $nostr.pubkeys,
-//       kinds: [0],
-//     },
-//   ],
-//   {
-//     onevent(event) {
-//       console.log("event", event);
-//     },
-//     // oneose() {
-//     //   h.close();
-//     // },
-//   }
-// );
-
 onMounted(async () => {
   if ($store.buying) {
     dataDialog.value = true;
@@ -385,27 +362,6 @@ onMounted(async () => {
   }
   identities.value = [...$store.identities.values()];
   await getIdentities();
-  // const events = await $nostr.pool.querySync([...$nostr.relays], {
-  //   authors: [...$nostr.pubkeys],
-  //   kinds: [0, 10002],
-  // });
-  // events.forEach((event) => {
-  //   switch (event.kind) {
-  //     case 0:
-  //       $nostr.addProfile(event);
-  //       break;
-  //     case 10002:
-  //       const relays = getTagValues(event, "r");
-  //       $nostr.addRelaysToProfile(event.pubkey, relays);
-  //       relays.forEach((r) => {
-  //         $nostr.addRelay(r);
-  //       });
-
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // });
 });
 </script>
 
