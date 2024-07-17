@@ -2,7 +2,9 @@
   <q-page class="q-pa-sm">
     <div class="hero" :class="$store.showCard ? 'hero-result' : 'hero-empty'">
       <div class="pitch text-center text-secondary">
-        <h1 class="text-h2 text-bold">Your @nostr.com Identity</h1>
+        <h1 class="text-bold" :class="$q.screen.gt.sm ? 'text-h2' : 'text-h3'">
+          Your @nostr.com Identity
+        </h1>
         <p class="text-h6">
           <span>Nostr Identifier</span> |
           <span class="cursor-pointer">Nostr Market</span> |
@@ -123,7 +125,7 @@ if ($route.query["q"]) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 5rem;
+  padding-top: 2.5rem;
   // padding-bottom: 3rem;
   // min-height: 61.8vh;
   // height: 100%;
@@ -182,6 +184,7 @@ if ($route.query["q"]) {
       align-self: center;
     }
   }
+
   .index-content {
     display: grid;
     gap: 3rem;
