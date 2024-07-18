@@ -8,95 +8,83 @@
     </div>
 
     <div>
-      <q-list
-        v-for="cartItem in identities"
-        class="nostr-card no-shadow q-ma-lg"
-        bordered
-      >
-        <q-item-label header>
-          <span class="text-weight-bold text-white"
-            >Nostr NIP05 Identifier</span
-          >
-          <span class="float-right">{{
-            timeFromNow(cartItem.time * 1000)
-          }}</span>
-        </q-item-label>
-        <q-item>
-          <q-item-section avatar>
-            <q-avatar>
-              <q-img
-                v-if="
-                  $nostr.profiles.has(cartItem.pubkey) &&
-                  $nostr.profiles.get(cartItem.pubkey).picture
-                "
-                :src="$nostr.profiles.get(cartItem.pubkey).picture"
-                spinner-color="secondary"
-                spinner-size="52px"
-                :ratio="1"
-              />
-              <NostrHeadIcon v-else color="blue-grey-4" />
-            </q-avatar>
-          </q-item-section>
-
-          <q-item-section>
-            <q-item-label caption lines="2">
+      <template v-for="cartItem in identities">
+        <q-card class="nostr-card no-shadow text-white q-mb-lg q-pa-sm">
+          <q-btn
+            class="float-right"
+            icon="close"
+            color="grey-7"
+            flat
+            round
+            dense
+            @click="showRemoveItem(cartItem)"
+          />
+          <q-card-section class="q-mt-md">
+            <span class="text-weight-bold text-white"
+              >Nostr NIP05 Identifier</span
+            >
+            <span class="float-right text-grey-7">{{
+              timeFromNow(cartItem.time * 1000)
+            }}</span>
+          </q-card-section>
+          <q-card-section class="row">
+            <div class="col">
               <span class="text-weight-bold text-white text-h6">
                 {{ cartItem.local_part }}</span
               >
-            </q-item-label>
-          </q-item-section>
-
-          <q-item-section side top>
-            <q-btn-dropdown
-              class="text-capitalize"
-              :label="
-                cartItem.config.years +
-                ' Year' +
-                (cartItem.config.years > 1 ? 's' : '')
-              "
-              size="md"
-              rounded
-              color="secondary"
-              text-color="primary"
-            >
-              <q-list
-                v-for="(year, index) in Array.from(
-                  { length: cartItem.config.max_years },
-                  (_, i) => i + 1
-                )"
-                :key="index"
+            </div>
+            <div class="col flex justify-end">
+              <q-btn-dropdown
+                class="text-capitalize"
+                :label="
+                  cartItem.config.years +
+                  ' Year' +
+                  (cartItem.config.years > 1 ? 's' : '')
+                "
+                size="md"
+                rounded
+                color="secondary"
+                text-color="primary"
               >
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="getPriceByYear(cartItem, year)"
-                  :active="isSameYear(cartItem.config.years, year)"
-                  active-class="bg-teal-1 text-grey-8"
-                  ><q-item-section>
-                    <q-item-label
-                      v-text="year + ' Year' + (year > 1 ? 's' : '')"
-                    ></q-item-label>
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-btn-dropdown>
-          </q-item-section>
-        </q-item>
-        <q-item>
-          <q-item-section avatar> </q-item-section>
-          <q-item-section>
+                <q-list
+                  v-for="(year, index) in Array.from(
+                    { length: cartItem.config.max_years },
+                    (_, i) => i + 1
+                  )"
+                  :key="index"
+                >
+                  <q-item
+                    clickable
+                    v-close-popup
+                    @click="getPriceByYear(cartItem, year)"
+                    :active="isSameYear(cartItem.config.years, year)"
+                    active-class="bg-teal-1 text-grey-8"
+                    ><q-item-section>
+                      <q-item-label
+                        v-text="year + ' Year' + (year > 1 ? 's' : '')"
+                      ></q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-btn-dropdown>
+            </div>
+          </q-card-section>
+          <q-card-section>
             <q-input
               dark
               standout
               v-model="cartItem.pubkey"
               label="Public Key"
               hint="Public key associated with this identifier. Hex or Npub format."
-            />
-          </q-item-section>
-        </q-item>
-        <q-item class="q-mt-md q-mb-sm">
-          <q-item-section avatar> </q-item-section>
-          <q-item-section>
+            >
+              <template v-slot:before v-if="$q.screen.gt.xs">
+                <q-avatar>
+                  <NostrHeadIcon color="secondary" />
+                </q-avatar>
+              </template>
+            </q-input>
+          </q-card-section>
+          <q-card-actions align="right" class="q-mt-md">
             <q-btn
               @click="submitIdentityBuy(cartItem)"
               :label="`Buy for ${cartItem.config.price} ${cartItem.config.currency}`"
@@ -106,25 +94,9 @@
               color="secondary"
               text-color="primary"
             ></q-btn>
-          </q-item-section>
-          <q-item-section class="col-8">
-            <!-- todo:find better way to ocupy this space -->
-            <span>&nbsp;</span>
-          </q-item-section>
-
-          <q-item-section side>
-            <q-btn
-              @click="showRemoveItem(cartItem)"
-              class="q-ml-auto float-right"
-              icon="delete"
-              label="Remove"
-              color="grey"
-              flat
-              dense
-            />
-          </q-item-section>
-        </q-item>
-      </q-list>
+          </q-card-actions>
+        </q-card>
+      </template>
     </div>
 
     <q-dialog
@@ -263,7 +235,7 @@ const submitIdentityBuy = async (cartItem) => {
       true
     );
     // npub to hex
-    cartItem.pubkey = data.pubkey
+    cartItem.pubkey = data.pubkey;
 
     if (data.payment_request) {
       paymentDetails.value = { ...data };
