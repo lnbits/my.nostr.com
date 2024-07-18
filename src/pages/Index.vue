@@ -105,6 +105,7 @@ const handleBuy = () => {
   }
   $store.buying = true;
   $store.newCartIdentifier = handle;
+  $store.handle = "";
   setTimeout(() => {
     $router.push({ path: "/cart" });
   }, 500);
