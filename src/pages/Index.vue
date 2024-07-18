@@ -45,7 +45,7 @@
           <CardItem
             :name="$store.handle"
             :data="$store.handleData"
-            :close="$store.resetHandle"
+            :close="closeCard"
             :action="handleBuy"
           />
         </div>
@@ -121,6 +121,12 @@ function scrollToElement(el) {
   const offset = el.offsetTop;
   const duration = 500;
   setVerticalScrollPosition(target, offset, duration);
+}
+
+function closeCard() {
+  $store.resetHandle();
+  handle.value = "";
+  $router.replace({ query: null });
 }
 </script>
 
