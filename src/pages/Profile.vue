@@ -173,38 +173,26 @@
 
       <q-separator color="secondary"></q-separator>
 
-
-      <q-card-actions>
-        <q-list dark class="row">
-          <q-item class="col-12">
-            <q-item-section>
-              <q-btn
-                @click="updateUserIdentifier"
-                rounded
-                class="text-capitalize"
-                color="secondary"
-                text-color="primary"
-                label="Update NIP05"
-              />
-            </q-item-section>
-
-            <q-item-section side>
-              <q-btn
-                disabled
-                label="Renew"
-                class="text-capitalize"
-                rounded
-                color="secondary"
-                text-color="primary"
-              >
-                <!-- todo: make this true -->
-                <q-tooltip
-                  >Can renew six months before expiration date.</q-tooltip
-                >
-              </q-btn>
-            </q-item-section>
-          </q-item>
-        </q-list>
+      <q-card-actions align="right">
+        <q-btn
+          disabled
+          label="Renew"
+          class="text-capitalize"
+          rounded
+          color="secondary"
+          text-color="primary"
+        >
+          <!-- todo: make this true -->
+          <q-tooltip>Can renew six months before expiration date.</q-tooltip>
+        </q-btn>
+        <q-btn
+          @click="updateUserIdentifier"
+          rounded
+          class="text-capitalize"
+          color="secondary"
+          text-color="primary"
+          label="Update NIP05"
+        />
       </q-card-actions>
     </q-card>
   </q-page>
