@@ -256,6 +256,7 @@ const updateUserIdentifier = async () => {
       relays: user_details.value.relays,
     });
     user_details.value = saas.mapAddressToProfile(data);
+    refreshProfileFromNostr();
     $q.notify({
       message: "Changes saved!",
       color: "positive",
@@ -277,7 +278,6 @@ const getUserIdentifier = async (id) => {
     if (data.length !== 1) {
       return;
     }
-
     const address = data[0];
     return saas.mapAddressToProfile(address);
   } catch (error) {
