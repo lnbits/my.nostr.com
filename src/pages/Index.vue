@@ -74,10 +74,10 @@ const handle = ref("");
 const nipCard = ref(null);
 
 const handleSearch = async () => {
+  if (!handle.value) {
+    return;
+  }
   try {
-    if (!handle.value) {
-      return;
-    }
     const { data } = await saas.queryIdentifier(handle.value);
     $store.handle = handle.value;
     $store.handleData = data;
