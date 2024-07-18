@@ -97,6 +97,22 @@
           </q-card-actions>
         </q-card>
       </template>
+      <template v-if="loading">
+        <q-card class="nostr-card q-mb-lg q-pa-sm">
+          <q-card-section>
+            <q-skeleton type="text" />
+          </q-card-section>
+          <q-card-section>
+            <q-skeleton type="text" />
+          </q-card-section>
+          <q-card-section>
+            <q-skeleton type="QInput" />
+          </q-card-section>
+          <q-card-actions align="right">
+            <q-skeleton type="QBtn" />
+          </q-card-actions>
+        </q-card>
+      </template>
     </div>
 
     <q-dialog
@@ -179,7 +195,6 @@
 <script setup>
 import { useQuasar, copyToClipboard } from "quasar";
 import { useAppStore } from "src/stores/store";
-import { useNostrStore } from "src/stores/nostr";
 import { onMounted, ref } from "vue";
 import { saas } from "boot/saas";
 import { timeFromNow } from "src/boot/utils";
@@ -189,7 +204,6 @@ import VueQrcode from "@chenfengyuan/vue-qrcode";
 
 const $q = useQuasar();
 const $store = useAppStore();
-const $nostr = useNostrStore();
 
 const identities = ref([]);
 
@@ -198,6 +212,7 @@ const showRemoveItemDialog = ref(false);
 const cartItemToRemove = ref(null);
 
 const paymentDetails = ref({});
+const loading = ref(true);
 
 const isSameYear = (y1, y2) => {
   return y1 === y2;
@@ -218,6 +233,7 @@ const getIdentities = async () => {
   try {
     const { data } = await saas.getUserIdentities({ active: false });
     identities.value = data;
+    loading.value = false;
   } catch (error) {
     console.error("error", error);
   }
@@ -323,6 +339,9 @@ const copyData = (data) => {
 
 onMounted(async () => {
   identities.value = [...$store.identities.values()];
+  if (identities.value.length > 0) {
+    loading.value = false;
+  }
   await getIdentities();
   if ($store.newCartIdentifier) {
     const { data } = await saas.createIdentity($store.newCartIdentifier);
