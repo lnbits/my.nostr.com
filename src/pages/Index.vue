@@ -40,13 +40,15 @@
           />
         </template>
       </q-input>
-      <div class="nip-list" v-if="$store.showCard">
-        <CardItem
-          :name="$store.handle"
-          :data="$store.handleData"
-          :close="$store.resetHandle"
-          :action="handleBuy"
-        />
+      <div ref="nipCard">
+        <div class="nip-list" v-if="$store.showCard">
+          <CardItem
+            :name="$store.handle"
+            :data="$store.handleData"
+            :close="$store.resetHandle"
+            :action="handleBuy"
+          />
+        </div>
       </div>
     </div>
   </q-page>
@@ -55,7 +57,7 @@
 <script setup>
 import { ref } from "vue";
 import { saas } from "src/boot/saas";
-import { useQuasar } from "quasar";
+import { useQuasar, scroll } from "quasar";
 import { useAppStore } from "src/stores/store";
 import { useRouter, useRoute } from "vue-router";
 
@@ -66,8 +68,10 @@ const $q = useQuasar();
 const $store = useAppStore();
 const $router = useRouter();
 const $route = useRoute();
+const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
 const handle = ref("");
+const nipCard = ref(null);
 
 const handleSearch = async () => {
   try {
@@ -87,6 +91,8 @@ const handleSearch = async () => {
     });
   } finally {
     $router.push({ query: { q: handle.value } });
+    const element = nipCard.value;
+    scrollToElement(element);
   }
 };
 const handleBuy = () => {
@@ -107,6 +113,13 @@ const handleBuy = () => {
 if ($route.query["q"]) {
   handle.value = $route.query["q"];
   handleSearch();
+}
+
+function scrollToElement(el) {
+  const target = getScrollTarget(el);
+  const offset = el.offsetTop;
+  const duration = 500;
+  setVerticalScrollPosition(target, offset, duration);
 }
 </script>
 
