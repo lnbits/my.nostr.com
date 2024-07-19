@@ -320,6 +320,9 @@ const removeCartItem = async () => {
       message: "Item removed",
       color: "positive",
     });
+    if (!identities.value.length) {
+      setTimeout(() => $router.push("/"), 500);
+    }
   } catch (error) {
     console.error(error);
     $q.notify({
