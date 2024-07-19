@@ -248,7 +248,6 @@ const addRelayFn = (relay) => {
     if (user_details.value.relays.includes(wsUrl)) return;
 
     user_details.value.relays.push(wsUrl);
-    addRelayValue.value = "";
   } catch (error) {
     $q.notify({
       message: "Invalid relay URL",
@@ -256,6 +255,8 @@ const addRelayFn = (relay) => {
       textColor: "black",
       color: "warning",
     });
+  } finally {
+    addRelayValue.value = "";
   }
 };
 
