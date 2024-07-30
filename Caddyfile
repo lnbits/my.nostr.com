@@ -1,25 +1,35 @@
 {
-  debug
+	debug
 }
 
 localhost:9090 {
-  handle /api/* {
-          reverse_proxy localhost:5000
-  }
+	@njump {
+		path /npub* /nevent* /nprofile* /naddr*
+		path /njump/*
+	}
 
-  handle /nostrnip5/* {
-          reverse_proxy localhost:5000
-  }
+	handle /api/* {
+		reverse_proxy localhost:5000
+	}
 
-  handle /* {
-          reverse_proxy localhost:8080
-  }
+	handle /nostrnip5/* {
+		reverse_proxy localhost:5000
+	}
+
+	handle @njump {
+		reverse_proxy https://njump.me {
+			header_up Host njump.me
+		}
+	}
+
+	handle /* {
+		reverse_proxy localhost:8080
+	}
 }
 
 localhost:9000 {
-
-  reverse_proxy localhost:5000 {
-          header_down Access-Control-Allow-Credentials true
-          header_down Access-Control-Allow-Origin https://localhost:9090
-  }
+	reverse_proxy localhost:5000 {
+		header_down Access-Control-Allow-Credentials true
+		header_down Access-Control-Allow-Origin https://localhost:9090
+	}
 }
