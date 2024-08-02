@@ -11,6 +11,10 @@ localhost:9090 {
           reverse_proxy localhost:5000
   }
 
+  handle /lnurlp/* {
+        reverse_proxy localhost:5000
+  }
+
   handle /* {
           reverse_proxy localhost:8080
   }

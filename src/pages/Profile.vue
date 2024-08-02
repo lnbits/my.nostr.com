@@ -11,14 +11,14 @@
       <q-tabs
         v-model="tab"
         dense
-        class="text-grey"
+        class="text-grey q-pa-sm"
         active-color="secondary"
         indicator-color="secondary"
         align="justify"
         narrow-indicator
       >
         <q-tab name="identifier" label="NIP05 Identifier" />
-        <q-tab name="lnaddress" label="Lightning Address" />
+        <q-tab name="ln_address" label="Lightning Address" />
       </q-tabs>
 
       <q-separator />
@@ -129,7 +129,6 @@
                 <q-item class="col-12">
                   <q-item-section>
                     <q-input
-                      class=""
                       dark
                       standout
                       v-model="user_details.pubkey"
@@ -217,8 +216,66 @@
           </div>
         </q-tab-panel>
 
-        <q-tab-panel name="lnaddress">
-          <div class="text-h6">Lightning Address</div>
+        <q-tab-panel name="ln_address" class="q-pa-none">
+          <div class="text-h6 q-pa-md">
+            <span v-text="user_details.name"></span>@nostr.com
+          </div>
+          <q-card-section>
+            <div class="row q-mt-sm">
+              <div class="col">
+                <q-select
+                  color="secondary"
+                  outlined
+                  dark
+                  map-options
+                  hint="Funds will be sent to this wallet"
+                  label="Select Wallet"
+                  v-model="selectedWallet"
+                  :options="userWallets"
+                ></q-select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 col-12 q-mt-lg q-pr-lg">
+                <q-input
+                  dark
+                  standout
+                  type="number"
+                  label="Min Sats"
+                  min="1"
+                  max="maxSats"
+                  step="1"
+                  hint="Minimum required amount."
+                  v-model="user_details.ln_address.min"
+                />
+              </div>
+              <div class="col-md-6 col-12 q-mt-lg">
+                <q-input
+                  dark
+                  standout
+                  type="number"
+                  label="Max Sats"
+                  min="1"
+                  step="1"
+                  hint="Maximum allowed amount."
+                  v-model="user_details.ln_address.max"
+                />
+              </div>
+            </div>
+          </q-card-section>
+          <q-separator color="secondary"></q-separator>
+
+          <q-card-actions align="right" class="q-pa-md">
+            <q-btn
+              @click="updateUserLNaddress"
+              rounded
+              class="text-capitalize"
+              color="secondary"
+              text-color="primary"
+              label="Update LN Address"
+            />
+          </q-card-actions>
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -243,6 +300,9 @@ const props = defineProps(["name"]);
 
 const tab = ref("identifier");
 const user_details = ref({});
+const userWallets = ref([]);
+const selectedWallet = ref(null);
+
 const addRelayValue = ref("");
 
 watch(
@@ -303,13 +363,35 @@ const updateUserIdentifier = async () => {
     user_details.value = saas.mapAddressToProfile(data);
     refreshProfileFromNostr();
     $q.notify({
-      message: "Changes saved!",
+      message: "Updated Identifier!",
       color: "positive",
     });
   } catch (error) {
     console.error(error);
     $q.notify({
       message: "Failed to update identifer!",
+      caption: error.response?.data?.detail,
+      color: "negative",
+    });
+  }
+};
+
+const updateUserLNaddress = async () => {
+  try {
+    await saas.updateLNaddress(user_details.value.id, {
+      wallet: selectedWallet.value.value,
+      min: user_details.value.ln_address.min,
+      max: user_details.value.ln_address.max,
+    });
+
+    $q.notify({
+      message: "Lighting Address updated!",
+      color: "positive",
+    });
+  } catch (error) {
+    console.error(error);
+    $q.notify({
+      message: "Failed to update Lightning Address!",
       caption: error.response?.data?.detail,
       color: "negative",
     });
@@ -327,6 +409,30 @@ const getUserIdentifier = async (id) => {
     return saas.mapAddressToProfile(address);
   } catch (error) {
     console.error("error", error);
+    $q.notify({
+      message: `Failed to fetch identifier '${id}'!`,
+      caption: error.response?.data?.detail,
+      color: "negative",
+    });
+  }
+};
+
+const getAccountDetails = async () => {
+  try {
+    const { data } = await saas.getAccountDetails();
+
+    const wallets = data.wallets.map((w) => ({
+      label: w.name,
+      value: w.id,
+    }));
+    userWallets.value = wallets;
+  } catch (error) {
+    console.error(error);
+    $q.notify({
+      message: "Failed to get user wallets!",
+      caption: error.response?.data?.detail,
+      color: "negative",
+    });
   }
 };
 
@@ -347,14 +453,19 @@ function refreshProfileFromNostr() {
 
 onMounted(async () => {
   const name = props.name || $route.params.name;
-  if (name) {
-    const identifier = await getUserIdentifier(name);
-    if (identifier) {
-      user_details.value = identifier;
-      refreshProfileFromNostr();
-      return;
-    }
+  if (!name) {
+    return $router.push({ path: "/identities" });
   }
-  return $router.push({ path: "/identities" });
+  const identifier = await getUserIdentifier(name);
+
+  await getAccountDetails();
+  if (identifier) {
+    user_details.value = identifier;
+    selectedWallet.value = userWallets.value.find(
+      (w) => w.value === identifier.ln_address.wallet
+    );
+    refreshProfileFromNostr();
+    return;
+  }
 });
 </script>
