@@ -19,7 +19,7 @@
         >
           <q-card class="nostr-card no-shadow cursor-pointer" bordered>
             <q-card-section class="text-center">
-              <q-avatar color="blue-grey-4" size="100px" class="shadow-10">
+              <q-avatar size="150px">
                 <LNbitsIcon color="primary" />
               </q-avatar>
             </q-card-section>
@@ -30,6 +30,7 @@
               </div>
               <div class="text-caption ellipsis">
                 <span v-text="wallet.balance_msat / 1000"></span>
+                <strong> sats</strong>
               </div>
             </q-card-section>
           </q-card>
@@ -41,12 +42,8 @@
 
 <script setup>
 import { useQuasar } from "quasar";
-import { useAppStore } from "src/stores/store";
-import { useNostrStore } from "src/stores/nostr";
-import { onMounted, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { onMounted, ref } from "vue";
 
-const $router = useRouter();
 import { saas } from "boot/saas";
 
 import LNbitsIcon from "components/LNbitsIcon.vue";
