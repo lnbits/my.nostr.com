@@ -56,8 +56,8 @@
       </q-card-section>
       <q-card-section v-if="showQrCode">
         <div class="row">
-          <div class="col-12">
-            <div class="responsive text-center">
+          <div class="col-12 text-center">
+            <div class="responsive">
               <vue-qrcode
                 :value="lndHubLink"
                 :options="{ width: 300 }"
