@@ -43,19 +43,17 @@
 <script setup>
 import { useQuasar } from "quasar";
 import { onMounted, ref } from "vue";
-
+import LNbitsIcon from "components/LNbitsIcon.vue";
+import { useNostrStore } from "src/stores/nostr"
 import { saas } from "boot/saas";
 
-import LNbitsIcon from "components/LNbitsIcon.vue";
-
+const $nostr = useNostrStore();
 const $q = useQuasar();
-
 const wallets = ref([]);
 
 const getAccountWallets = async () => {
   try {
     const { data } = await saas.getAccountDetails();
-
     return data.wallets;
   } catch (error) {
     console.error(error);
@@ -65,10 +63,13 @@ const getAccountWallets = async () => {
       color: "negative",
     });
   }
+  return []
 };
 
 onMounted(async () => {
-  wallets.value = await getAccountWallets();
+  const userWallets = await getAccountWallets();
+  wallets.value = userWallets
+  $nostr.wallets = userWallets
 });
 </script>
 

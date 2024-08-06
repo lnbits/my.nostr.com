@@ -32,7 +32,7 @@ const routes = [
       },
       {
         name: "Wallet",
-        path: "/wallets/:name",
+        path: "/wallets/:id",
         component: () => import("pages/Wallet.vue"),
         props: true,
       },
