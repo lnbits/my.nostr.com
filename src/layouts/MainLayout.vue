@@ -29,6 +29,9 @@
               <q-item clickable v-close-popup to="/identities">
                 <q-item-section>Identities</q-item-section>
               </q-item>
+              <q-item clickable v-close-popup to="/wallets">
+                <q-item-section>Wallets</q-item-section>
+              </q-item>
 
               <q-item clickable v-close-popup to="/cart">
                 <q-item-section>Cart</q-item-section>
