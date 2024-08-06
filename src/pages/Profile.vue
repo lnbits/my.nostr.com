@@ -378,6 +378,13 @@ const updateUserIdentifier = async () => {
 
 const updateUserLNaddress = async () => {
   try {
+    if (!selectedWallet.value) {
+      $q.notify({
+        message: "Please select an wallet!",
+        color: "warning",
+      });
+      return;
+    }
     await saas.updateLNaddress(user_details.value.id, {
       wallet: selectedWallet.value.value,
       min: user_details.value.ln_address.min,
