@@ -55,8 +55,10 @@
         </q-list>
       </q-card-section>
       <q-card-section v-if="showQrCode">
-        <div class="row">
-          <div class="col-12 text-center">
+        <div class="row ">
+          <div class="col-md-3 col-none">
+          </div>
+          <div class="col-md-6 col-12  text-center">
             <div class="responsive">
               <vue-qrcode
                 :value="lndHubLink"
@@ -172,12 +174,11 @@ onMounted(async () => {
   wallet.value = { id: id };
 
   let activeWallet = $nostr.wallets.find((w) => w.id === id);
-  console.log("### activeWallet 1", activeWallet);
   if (!activeWallet) {
     const userWallets = await getAccountWallets();
     activeWallet = userWallets.find((w) => w.id === id);
   }
-  console.log("### activeWallet 2", activeWallet);
+
   if (!activeWallet) {
     return $router.push({ path: "/wallets" });
   }
