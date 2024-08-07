@@ -38,7 +38,7 @@
       </div>
       <div class="q-pa-sm col-xs-12 col-sm-6 col-md-4 col-lg-3">
         <q-card class="nostr-card no-shadow cursor-pointer" bordered>
-          <q-card-section class="text-center">
+          <q-card-section class="text-center q-mt-sm">
             <q-avatar size="150px">
               <LNbitsIcon color="primary" />
             </q-avatar>
@@ -48,6 +48,7 @@
               dark
               standout
               label="New Lighting Wallet"
+              class="q-mb-xs"
             >
               <q-btn @click="createWallet" dense flat icon="add"></q-btn>
               <template v-slot:after> </template>
