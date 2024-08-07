@@ -36,30 +36,13 @@ lnbits.link {
 }
 
 my.lnbits.link {
-	handle /api/* {
-		reverse_proxy localhost:5000 {
-			header_up Host my.lnbits.link
-			header_down Access-Control-Allow-Credentials true
-			header_down Access-Control-Allow-Origin https://my.lnbits.link
-		}
+	@lnbits_backend {
+		path /api/v1/auth* /api/v1/ws/*
+		path /nostrnip5/api/v1* /lnurlp/api/v1*
+		path /lndhub/api/v1* /lndhub/ext/*
 	}
 
-	handle /nostrnip5/api/* {
-		reverse_proxy localhost:5000 {
-			header_up Host my.lnbits.link
-			header_down Access-Control-Allow-Credentials true
-			header_down Access-Control-Allow-Origin https://my.lnbits.link
-		}
-	}
-
-	handle /lnurlp/api* {
-		reverse_proxy localhost:5000 {
-			header_up Host my.lnbits.link
-			header_down Access-Control-Allow-Credentials true
-			header_down Access-Control-Allow-Origin https://my.lnbits.link
-		}
-	}
-	handle /lndhub/* {
+	handle @lnbits_backend {
 		reverse_proxy localhost:5000 {
 			header_up Host my.lnbits.link
 			header_down Access-Control-Allow-Credentials true
