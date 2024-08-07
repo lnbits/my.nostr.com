@@ -59,14 +59,13 @@ my.lnbits.link {
 			header_down Access-Control-Allow-Origin https://my.lnbits.link
 		}
 	}
-        handle /lndhub/* {
-                reverse_proxy localhost:5000 {
-                        header_up Host my.lnbits.link
-                        header_down Access-Control-Allow-Credentials true
-                        header_down Access-Control-Allow-Origin https://my.lnbits.link
-                }
-        }
-
+	handle /lndhub/* {
+		reverse_proxy localhost:5000 {
+			header_up Host my.lnbits.link
+			header_down Access-Control-Allow-Credentials true
+			header_down Access-Control-Allow-Origin https://my.lnbits.link
+		}
+	}
 
 	reverse_proxy localhost:8080 {
 		header_up X-Forwarded-Host my.lnbits.link
