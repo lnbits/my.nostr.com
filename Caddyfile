@@ -3,6 +3,9 @@
 }
 
 localhost:9090 {
+	handle /api/v1/ws* {
+		reverse_proxy localhost:5000
+	}
 	handle /api/v1/auth* {
 		reverse_proxy localhost:5000
 	}

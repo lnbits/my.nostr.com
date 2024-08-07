@@ -65,12 +65,7 @@
             </div>
           </div>
         </div>
-        <div class="row">
-          <div class="col-12 text-caption text-center">
-            <span v-text="lndHubLink"></span>
-          </div>
-        </div>
-        <div class="row">
+        <div class="row q-mt-md">
           <div class="col-12 text-center">
             <q-btn
               rounded

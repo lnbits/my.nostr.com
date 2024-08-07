@@ -36,6 +36,25 @@
           </q-card>
         </router-link>
       </div>
+      <div class="q-pa-sm col-xs-12 col-sm-6 col-md-4 col-lg-3">
+        <q-card class="nostr-card no-shadow cursor-pointer" bordered>
+          <q-card-section class="text-center">
+            <q-avatar size="150px">
+              <LNbitsIcon color="primary" />
+            </q-avatar>
+            <q-input
+              v-model="newWalletName"
+              @keydown.enter="createWallet()"
+              dark
+              standout
+              label="New Lighting Wallet"
+            >
+              <q-btn @click="createWallet" dense flat icon="add"></q-btn>
+              <template v-slot:after> </template>
+            </q-input>
+          </q-card-section>
+        </q-card>
+      </div>
     </div>
   </q-page>
 </template>
@@ -44,12 +63,13 @@
 import { useQuasar } from "quasar";
 import { onMounted, ref } from "vue";
 import LNbitsIcon from "components/LNbitsIcon.vue";
-import { useNostrStore } from "src/stores/nostr"
+import { useNostrStore } from "src/stores/nostr";
 import { saas } from "boot/saas";
 
 const $nostr = useNostrStore();
 const $q = useQuasar();
 const wallets = ref([]);
+const newWalletName = ref("");
 
 const getAccountWallets = async () => {
   try {
@@ -63,13 +83,30 @@ const getAccountWallets = async () => {
       color: "negative",
     });
   }
-  return []
+  return [];
+};
+
+const createWallet = async () => {
+  try {
+    $q.notify({
+      message: "Comming soon!",
+      color: "warning",
+    });
+  } catch (error) {
+    console.error(error);
+    $q.notify({
+      message: "Failed to create wallet!",
+      caption: error.response?.data?.detail,
+      color: "negative",
+    });
+  }
+  newWalletName.value = "";
 };
 
 onMounted(async () => {
   const userWallets = await getAccountWallets();
-  wallets.value = userWallets
-  $nostr.wallets = userWallets
+  wallets.value = userWallets;
+  $nostr.wallets = userWallets;
 });
 </script>
 
