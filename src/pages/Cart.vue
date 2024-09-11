@@ -84,7 +84,60 @@
               </template>
             </q-input>
           </q-card-section>
+          <q-card-section v-if="showPromoCode">
+            <div class="row">
+              <div class="col-md-6 col-12 q-mt-md">
+                <q-input
+                  dark
+                  standout
+                  v-model="cartItem.promo_code"
+                  label="Promo Code"
+                  hint="Use this code to get a discount when buying your identifier."
+                >
+                  <template v-slot:before v-if="$q.screen.gt.xs">
+                    <q-avatar>
+                      <q-icon name="discount"></q-icon>
+                    </q-avatar>
+                  </template>
+                  <template v-slot:append>
+                    <q-btn
+                      label="Check"
+                      rounded
+                      unelevated
+                      text-color="primary"
+                      color="secondary"
+                    ></q-btn>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-md-6 col-12 q-mt-md">
+                <q-input
+                  dark
+                  standout
+                  v-model="cartItem.referer"
+                  label="Referer"
+                  hint="This user will get a share of the payment."
+                >
+                  <template v-slot:before v-if="$q.screen.gt.xs">
+                    <q-avatar>
+                      <q-icon name="person_pin"></q-icon>
+                    </q-avatar>
+                  </template>
+                </q-input>
+              </div>
+            </div>
+          </q-card-section>
+
           <q-card-actions align="right" class="q-mt-md">
+            <q-btn
+              @click="showPromoCode = !showPromoCode"
+              label="Use promo code"
+              icon="discount"
+              class="text-capitalize float-left"
+              rounded
+              color=""
+              text-color="secondary"
+            ></q-btn>
             <q-btn
               @click="submitIdentityBuy(cartItem)"
               :label="`Buy for ${cartItem.config.price} ${cartItem.config.currency}`"
@@ -221,6 +274,7 @@ const cartItemToRemove = ref(null);
 
 const paymentDetails = ref({});
 const loading = ref(true);
+const showPromoCode = ref(false);
 
 const isSameYear = (y1, y2) => {
   return y1 === y2;
