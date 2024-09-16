@@ -88,9 +88,9 @@
             <div class="row">
               <div class="col-md-6 col-12 q-mt-md">
                 <q-input
+                  v-model="cartItem.config.promo_code"
                   dark
                   standout
-                  v-model="cartItem.promo_code"
                   label="Promo Code"
                   hint="Use this code to get a discount when buying your identifier."
                 >
@@ -101,6 +101,7 @@
                   </template>
                   <template v-slot:append>
                     <q-btn
+                      @click="computeCartItemPrice(cartItem)"
                       label="Check"
                       rounded
                       unelevated
@@ -112,9 +113,10 @@
               </div>
               <div class="col-md-6 col-12 q-mt-md">
                 <q-input
+                  v-if="cartItem.allow_referer"
                   dark
                   standout
-                  v-model="cartItem.referer"
+                  v-model="cartItem.config.referer"
                   label="Referer"
                   hint="This user will get a share of the payment."
                 >
@@ -282,10 +284,17 @@ const isSameYear = (y1, y2) => {
 
 const getPriceByYear = async (cartItem, year) => {
   cartItem.config.years = year;
+  await computeCartItemPrice(cartItem)
+};
+
+const computeCartItemPrice = async (cartItem) => {
   const { data } = await saas.createIdentity(
     cartItem.local_part,
     cartItem.pubkey,
-    cartItem.config.years
+    cartItem.config.years,
+    false,
+    cartItem.config.promo_code,
+    cartItem.config.referer,
   );
 
   Object.assign(cartItem, data);

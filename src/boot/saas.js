@@ -114,7 +114,7 @@ const saas = {
 
     return response;
   },
-  createIdentity: async function (identifier, pubkey, years, createInvoice) {
+  createIdentity: async function (identifier, pubkey, years, createInvoice, promo_code, referer) {
     // todo: extract object
     const response = await axios({
       method: "POST",
@@ -124,6 +124,8 @@ const saas = {
         local_part: identifier,
         pubkey: pubkey,
         years: years,
+        promo_code: promo_code,
+        referer: referer,
         create_invoice: createInvoice,
       },
     });
