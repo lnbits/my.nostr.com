@@ -114,18 +114,18 @@ const saas = {
 
     return response;
   },
-  createIdentity: async function (identifier, pubkey, years, createInvoice, promo_code, referer) {
+  createIdentity: async function (data, createInvoice = false) {
     // todo: extract object
     const response = await axios({
       method: "POST",
       url: `${this.url}/nostrnip5/api/v1/user/domain/${this.domain}/address`,
       data: {
         domain_id: this.domain,
-        local_part: identifier,
-        pubkey: pubkey,
-        years: years,
-        promo_code: promo_code,
-        referer: referer,
+        local_part: data.identifier,
+        pubkey: data.pubkey,
+        years: data.years,
+        promo_code: data.promo_code,
+        referer: data.referer,
         create_invoice: createInvoice,
       },
     });

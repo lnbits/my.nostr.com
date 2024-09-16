@@ -347,14 +347,13 @@ const togglePromoCode = async (cartItem) => {
 };
 
 const computeCartItemPrice = async (cartItem) => {
-  const { data } = await saas.createIdentity(
-    cartItem.local_part,
-    cartItem.pubkey,
-    cartItem.config.years,
-    false,
-    cartItem.config.promo_code,
-    cartItem.config.referer
-  );
+  const { data } = await saas.createIdentity({
+    identifier: cartItem.local_part,
+    pubkey: cartItem.pubkey,
+    years: cartItem.config.years,
+    promo_code: cartItem.config.promo_code,
+    referer: cartItem.config.referer,
+  });
 
   Object.assign(cartItem, data);
 };
@@ -378,9 +377,11 @@ const submitIdentityBuy = async (cartItem) => {
 
     paymentDetails.value = { local_part: cartItem.local_part };
     const { data } = await saas.createIdentity(
-      cartItem.local_part,
-      cartItem.pubkey,
-      cartItem.config?.years,
+      {
+        identifier: cartItem.local_part,
+        pubkey: cartItem.pubkey,
+        years: cartItem.config.years,
+      },
       true
     );
     // npub to hex
@@ -480,7 +481,9 @@ onMounted(async () => {
   }
   await getIdentities();
   if ($store.newCartIdentifier) {
-    const { data } = await saas.createIdentity($store.newCartIdentifier);
+    const { data } = await saas.createIdentity({
+      identifier: $store.newCartIdentifier,
+    });
     identities.value = identities.value.filter((i) => i.id !== data.id);
     identities.value.unshift(data);
   }
