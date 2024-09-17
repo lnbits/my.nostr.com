@@ -339,7 +339,6 @@ const getPriceByYear = async (cartItem, year) => {
 };
 
 const togglePromoCode = async (cartItem) => {
-  console.log("#### togglePromoCode", cartItem);
   if (!cartItem.showPromoCode) {
     cartItem.config.promo_code = null;
     await computeCartItemPrice(cartItem);
