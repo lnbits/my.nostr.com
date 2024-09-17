@@ -381,6 +381,8 @@ const submitIdentityBuy = async (cartItem) => {
         identifier: cartItem.local_part,
         pubkey: cartItem.pubkey,
         years: cartItem.config.years,
+        promo_code: cartItem.config.promo_code,
+        referer: cartItem.config.referer,
       },
       true
     );
