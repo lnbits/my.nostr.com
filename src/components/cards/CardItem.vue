@@ -16,35 +16,63 @@
     </q-card-section>
     <q-card-section class="text-grey-5 q-mb-sm">
       <div v-if="data.available" class="text-h6">
-        <q-badge class="text-h6 q-mr-sm" color="secondary" text-color="primary">
-          {{ name }}
-        </q-badge>
-        <span>is available!</span>
-        &nbsp;Get it now for
-        <span
-          >{{
-            data.currency !== "sats"
-              ? formatCurrency(data.price, data.currency)
-              : formatSat(data.price)
-          }}.</span
-        >
+        <div>
+          <q-badge
+            class="text-h6 q-mr-sm"
+            color="secondary"
+            text-color="primary"
+          >
+            <span v-text="data.identifier + '@nostr.com'"></span>
+          </q-badge>
+          <span>is available!</span>
+          &nbsp;Get it now for
+          <span
+            >{{
+              data.currency !== "sats"
+                ? formatCurrency(data.price, data.currency)
+                : formatSat(data.price)
+            }}!</span
+          >
+          <q-btn
+            v-if="data.available"
+            rounded
+            color="secondary"
+            text-color="primary"
+            label="Add to Cart"
+            class="text-capitalize q-ml-auto float-right"
+            @click="action"
+          />
+        </div>
       </div>
       <div v-else class="text-h6">
         <span>
           The handle <span>{{ name }}</span> is not available!
         </span>
       </div>
+
+      <div v-if="data.free_identifier" class="q-mt-lg text-h6">
+        <q-separator class="q-ma-lg q-pa-lg"></q-separator>
+        <q-badge
+          outline
+          class="text-h6 q-mr-sm"
+          color="secondary"
+          text-color="secondary"
+        >
+          <span v-text="data.free_identifier + '@nostr.com'"></span>
+        </q-badge>
+        <span>is available for free!</span>
+        <q-btn
+          outline
+          rounded
+          color="primary"
+          text-color="secondary"
+          label="Get free identifier"
+          class="text-capitalize q-ml-auto float-right"
+          @click="action"
+        />
+      </div>
     </q-card-section>
-    <q-card-actions v-if="data.available">
-      <q-btn
-        rounded
-        color="secondary"
-        text-color="primary"
-        label="Add to Cart"
-        class="text-capitalize q-ml-auto float-right"
-        @click="action"
-      />
-    </q-card-actions>
+    <q-card-actions v-if="data.available"> </q-card-actions>
   </q-card>
 </template>
 
