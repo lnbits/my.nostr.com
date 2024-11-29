@@ -67,6 +67,7 @@
           />
         </template>
       </q-input>
+
       <div class="flex full-width justify-center" ref="nipCard">
         <div class="nip-list q-pa-lg" v-if="$store.showCard">
           <CardItem
@@ -78,6 +79,24 @@
           />
         </div>
       </div>
+      <q-badge
+        v-if="$store.pubkey"
+        outline
+        color="secondary"
+        class="q-pt-none q-pb-none"
+        dense
+      >
+        <span v-text="'npub:  ' + $store.pubkey" dense></span>
+        <q-btn
+          @click="$store.pubkey = null"
+          class="q-ml-lg"
+          icon="close"
+          color="white"
+          flat
+          round
+          dense
+        />
+      </q-badge>
     </div>
   </q-page>
 </template>
@@ -161,7 +180,10 @@ const handleFreeId = () => {
     $router.push({ path: "/identities" });
   }, 500);
 };
-
+const pubkey = $route.query["npub"] || $route.query["pubkey"];
+if (pubkey) {
+  $store.pubkey = pubkey;
+}
 if ($route.query["q"]) {
   handle.value = $route.query["q"];
   handleSearch();

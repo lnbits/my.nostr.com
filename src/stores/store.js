@@ -5,6 +5,7 @@ export const useAppStore = defineStore("store", {
     newCartIdentifier: null,
     freeCartIdentifier: null,
     username: null,
+    pubkey: null,
     handle: "",
     handleData: {},
     buying: false,

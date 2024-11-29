@@ -171,6 +171,9 @@ const saas = {
     if (typeof data === "string") {
       return data;
     }
+    if (typeof data.detail === "string") {
+      return data.detail;
+    }
     return data?.detail?.map((d) => d.msg).join(", ");
   },
 };
