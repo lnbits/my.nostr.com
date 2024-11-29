@@ -50,7 +50,7 @@
         </span>
       </div>
 
-      <div v-if="data.free_identifier" class="q-mt-lg text-h6">
+      <div v-if="data.hasFreeOption" class="q-mt-lg text-h6">
         <div class="q-ma-md q-pa-md"></div>
         <q-badge
           outline
@@ -60,13 +60,14 @@
         >
           <span v-text="data.identifier + '.'"></span>
           <q-input
+            v-model="data.free_identifier_number"
             type="number"
             min="0"
             max="999999"
             autofocus
             dense
-
-            class="my-input"
+            :rules="[(val) => val.length <= 6 || 'Max 6 characters']"
+            class="my-input q-pb-none"
             :input-style="{
               fontSize: '22px',
               color: '#7dd3fc',

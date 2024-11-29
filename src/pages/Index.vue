@@ -108,6 +108,7 @@ const handleSearch = async () => {
   try {
     const { data } = await saas.queryIdentifier(handle.value);
     $store.handle = handle.value;
+    data.hasFreeOption = !!data.free_identifier_number;
     $store.handleData = data;
   } catch (error) {
     console.error("Error searching for identifier: ", error);
@@ -148,7 +149,13 @@ const handleFreeId = () => {
     });
   }
   $store.buying = true;
-  $store.newCartIdentifier = $store.handleData.free_identifier;
+  if ($store.handleData.hasFreeOption) {
+    $store.newCartIdentifier =
+      $store.handleData.identifier +
+      "." +
+      $store.handleData.free_identifier_number.padStart(6, "0");
+  }
+
   $store.handle = "";
   setTimeout(() => {
     $router.push({ path: "/identities" });
