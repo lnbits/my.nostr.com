@@ -173,7 +173,7 @@ const handleFreeId = () => {
   }
   $store.buying = true;
   if ($store.handleData.hasFreeOption) {
-    $store.newCartIdentifier =
+    $store.freeCartIdentifier =
       $store.handleData.identifier +
       "." +
       $store.handleData.free_identifier_number.padStart(6, "0");

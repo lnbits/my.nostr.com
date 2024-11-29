@@ -227,10 +227,10 @@ const handleBuy = () => {
 onMounted(async () => {
   identities.value = [...$store.identities.values()];
   await getIdentities();
-  if ($store.newCartIdentifier) {
+  if ($store.freeCartIdentifier) {
     try {
       await saas.createIdentity({
-        identifier: $store.newCartIdentifier,
+        identifier: $store.freeCartIdentifier,
         pubkey: $store.pubkey || "",
       });
     } catch (error) {
@@ -241,6 +241,7 @@ onMounted(async () => {
         icon: "warning",
       });
     }
+    $store.freeCartIdentifier = null
     await getIdentities();
   }
 });
