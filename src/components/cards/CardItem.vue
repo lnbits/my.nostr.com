@@ -51,15 +51,31 @@
       </div>
 
       <div v-if="data.free_identifier" class="q-mt-lg text-h6">
-        <q-separator class="q-ma-lg q-pa-lg"></q-separator>
+        <div class="q-ma-md q-pa-md"></div>
         <q-badge
           outline
           class="text-h6 q-mr-sm"
           color="secondary"
           text-color="secondary"
         >
-          <span v-text="data.free_identifier + '@nostr.com'"></span>
+          <span v-text="data.identifier + '.'"></span>
+          <q-input
+            type="number"
+            min="0"
+            max="999999"
+            autofocus
+            dense
+
+            class="my-input"
+            :input-style="{
+              fontSize: '22px',
+              color: '#7dd3fc',
+            }"
+          >
+          </q-input>
+          <span>@nostr.com</span>
         </q-badge>
+
         <span>is available for free!</span>
         <q-btn
           outline
@@ -68,7 +84,7 @@
           text-color="secondary"
           label="Get free identifier"
           class="text-capitalize q-ml-auto float-right"
-          @click="action"
+          @click="free"
         />
       </div>
     </q-card-section>
@@ -77,7 +93,7 @@
 </template>
 
 <script setup>
-defineProps(["name", "data", "close", "action"]);
+defineProps(["name", "data", "close", "action", "free"]);
 
 const formatCurrency = (value, currency) => {
   return new Intl.NumberFormat(window.LOCALE, {
@@ -90,4 +106,20 @@ const formatSat = (value) => {
 };
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.my-input {
+  font-style: "22px";
+  color: "#7dd3fc";
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+</style>

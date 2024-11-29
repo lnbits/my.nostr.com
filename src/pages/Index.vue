@@ -74,6 +74,7 @@
             :data="$store.handleData"
             :close="closeCard"
             :action="handleBuy"
+            :free="handleFreeId"
           />
         </div>
       </div>
@@ -135,6 +136,22 @@ const handleBuy = () => {
   $store.handle = "";
   setTimeout(() => {
     $router.push({ path: "/cart" });
+  }, 500);
+};
+
+const handleFreeId = () => {
+  if (!$store.isLoggedIn) {
+    $q.notify({
+      message: "Please to get your free identifier",
+      color: "warning",
+      textColor: "black",
+    });
+  }
+  $store.buying = true;
+  $store.newCartIdentifier = $store.handleData.free_identifier;
+  $store.handle = "";
+  setTimeout(() => {
+    $router.push({ path: "/identities" });
   }, 500);
 };
 

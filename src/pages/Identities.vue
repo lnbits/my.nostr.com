@@ -225,6 +225,13 @@ const handleBuy = () => {
 onMounted(async () => {
   identities.value = [...$store.identities.values()];
   await getIdentities();
+  if ($store.newCartIdentifier) {
+    const { data } = await saas.createIdentity({
+      identifier: $store.newCartIdentifier,
+    });
+    console.log("### data", data)
+    await getIdentities();
+  }
 });
 </script>
 
