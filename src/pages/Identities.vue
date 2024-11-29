@@ -242,6 +242,7 @@ onMounted(async () => {
       });
     }
     $store.freeCartIdentifier = null
+    $store.pubkey = null
     await getIdentities();
   }
 });

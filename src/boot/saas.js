@@ -122,7 +122,7 @@ const saas = {
       data: {
         domain_id: this.domain,
         local_part: data.identifier,
-        pubkey: data.pubkey,
+        pubkey: data.pubkey || "",
         years: data.years,
         promo_code: data.promo_code,
         referer: data.referer,
