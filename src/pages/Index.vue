@@ -86,7 +86,11 @@
         class="q-pt-none q-pb-none"
         dense
       >
-        <span v-text="'npub:  ' + $store.pubkey" dense></span>
+        <span
+          v-text="'npub:  ' + $store.pubkey"
+          dense
+          style="white-space: normal; word-break: break-all"
+        ></span>
         <q-btn
           @click="$store.pubkey = null"
           class="q-ml-lg"
