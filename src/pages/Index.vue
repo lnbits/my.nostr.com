@@ -166,7 +166,7 @@ const handleBuy = () => {
 const handleFreeId = () => {
   if (!$store.isLoggedIn) {
     $q.notify({
-      message: "Please to get your free identifier",
+      message: "Please login to get your free identifier",
       color: "warning",
       textColor: "black",
     });
