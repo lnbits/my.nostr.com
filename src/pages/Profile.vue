@@ -62,7 +62,7 @@
                       </div>
 
                       <div v-if="user_details.expiresAt" class="text-caption">
-                        Expires at
+                        Ends at
                         <span
                           v-text="
                             new Date(
@@ -191,6 +191,34 @@
             <q-separator color="secondary"></q-separator>
 
             <q-card-actions align="right" class="q-pa-md">
+              <div v-if="user_details.is_locked">
+                <q-btn
+                  label="Check Bids"
+                  class="text-capitalize"
+                  rounded
+                  outline
+                  color="secondary"
+                  padding="sm lg"
+                  :to="`/bid/${itemId}`"
+                >
+                </q-btn>
+                <div class="text-caption text-grey-5 q-mt-sm">
+                  This identifier is locked for sale.
+                </div>
+              </div>
+              <q-btn
+                v-else
+                label="Sell"
+                class="text-capitalize"
+                rounded
+                outline
+                color="secondary"
+                padding="sm lg"
+                @click="createSellOffer"
+              >
+                <q-tooltip>Sell this identifier.</q-tooltip>
+              </q-btn>
+              <q-space />
               <q-btn
                 disabled
                 label="Renew"
@@ -279,200 +307,412 @@
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
+    <q-dialog v-model="showSellDialog" @hide="resetSellData" persistent>
+      <q-card style="min-width: 350px" class="q-pa-md">
+        <q-card-section>
+          <div class="text-h6 text-center">Sell this identifier</div>
+          <div class="text-subtitle2 text-center">{{ user_details.name }}</div>
+        </q-card-section>
+        <q-card-section v-if="sellData.room">
+          <div class="q-gutter-sm">
+            <q-radio
+              v-model="sellData.type"
+              val="auction"
+              label="Auction"
+              @update:model-value="handleTypeChange"
+            />
+            <q-radio
+              v-model="sellData.type"
+              val="fixed_price"
+              label="Fixed Price"
+              @update:model-value="handleTypeChange"
+            />
+          </div>
+          <q-list dense padding class="q-mb-md">
+            <q-item>
+              <q-item-section>
+                <q-item-label>Duration:</q-item-label>
+              </q-item-section>
+
+              <q-item-section side>
+                <q-item-label
+                  caption
+                  v-text="timeFromSeconds(sellData.room.duration_seconds)"
+                ></q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item v-if="sellData.type === 'auction'">
+              <q-item-section>
+                <q-item-label>Minimum bid increase:</q-item-label>
+              </q-item-section>
+
+              <q-item-section side>
+                <q-item-label
+                  caption
+                  v-text="sellData.room.min_bid_up_percentage + '%'"
+                ></q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section>
+                <q-item-label>Comission</q-item-label>
+              </q-item-section>
+
+              <q-item-section side>
+                <q-item-label
+                  caption
+                  v-text="sellData.room.room_percentage + '%'"
+                ></q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+
+          <q-input
+            class="q-mt-md"
+            v-model="sellData.price"
+            type="number"
+            :label="
+              sellData.type === 'auction'
+                ? `Starting Price (${sellData.currency})`
+                : `Price (${sellData.currency})`
+            "
+            :hint="
+              sellData.type === 'auction'
+                ? 'Starting price for the auction'
+                : 'Price for the identifier'
+            "
+          />
+          <!-- todo: validate email format -->
+          <q-input
+            class="q-mt-md"
+            v-model="sellData.ln_address"
+            label="Lightning Address (optional)"
+            hint="Lightning Address to receive the payment once the auction is over."
+          />
+        </q-card-section>
+        <q-card-section v-else class="text-center">
+          <q-spinner size="lg" />
+        </q-card-section>
+        <q-card-actions align="right" class="q-mt-lg">
+          <q-btn
+            flat
+            v-close-popup
+            color="grey"
+            class="q-mr-auto text-capitalize"
+            label="Cancel"
+          ></q-btn>
+          <q-btn
+            label="Post"
+            rounded
+            color="secondary"
+            text-color="primary"
+            @click="sendSellOffer"
+            :disabled="!sellData.price || !sellData.type"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script setup>
-import { useQuasar } from "quasar";
-import { ref, onMounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useNostrStore } from "src/stores/nostr";
+import {useQuasar} from 'quasar'
+import {ref, onMounted, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {useNostrStore} from 'src/stores/nostr'
+import {useBidStore} from 'src/stores/bids'
 
-import { saas } from "boot/saas";
-import NostrHeadIcon from "components/NostrHeadIcon.vue";
+import {saas} from 'boot/saas'
+import {timeFromSeconds} from 'src/boot/utils'
+import NostrHeadIcon from 'components/NostrHeadIcon.vue'
 
-const $q = useQuasar();
-const $router = useRouter();
-const $route = useRoute();
-const $nostr = useNostrStore();
+const $q = useQuasar()
+const $router = useRouter()
+const $route = useRoute()
+const $nostr = useNostrStore()
+const $bids = useBidStore()
 
-const props = defineProps(["name"]);
+const props = defineProps(['name'])
 
-const tab = ref("identifier");
-const user_details = ref({});
-const userWallets = ref([]);
-const selectedWallet = ref(null);
+const tab = ref('identifier')
+const user_details = ref({})
+const userWallets = ref([])
+const selectedWallet = ref(null)
 
-const addRelayValue = ref("");
+const addRelayValue = ref('')
+
+const showSellDialog = ref(false)
+const sellData = ref({})
+
+const itemId = ref(null)
 
 watch(
   () => $nostr.initiated,
   () => refreshProfileFromNostr()
-);
+)
 
-const validateWsURL = (wsUrl) => {
-  let url = null;
+const validateWsURL = wsUrl => {
+  let url = null
   try {
-    url = new URL(wsUrl);
+    url = new URL(wsUrl)
   } catch {}
   if (!url) {
     try {
-      wsUrl = `wss://${wsUrl}`;
-      url = new URL(wsUrl);
+      wsUrl = `wss://${wsUrl}`
+      url = new URL(wsUrl)
     } catch {}
   }
-  if (!url || (url.protocol !== "ws:" && url.protocol !== "wss:")) {
-    throw new Error("Protocol must be 'ws://' or 'wss://'");
+  if (!url || (url.protocol !== 'ws:' && url.protocol !== 'wss:')) {
+    throw new Error("Protocol must be 'ws://' or 'wss://'")
   }
 
-  return wsUrl;
-};
+  return wsUrl
+}
 
-const addRelayFn = (relay) => {
-  if (!relay) return;
+const addRelayFn = relay => {
+  if (!relay) return
 
   try {
-    const wsUrl = validateWsURL(relay);
-    if (user_details.value.relays.includes(wsUrl)) return;
+    const wsUrl = validateWsURL(relay)
+    if (user_details.value.relays.includes(wsUrl)) return
 
-    user_details.value.relays.push(wsUrl);
+    user_details.value.relays.push(wsUrl)
   } catch (error) {
     $q.notify({
-      message: "Invalid relay URL",
+      message: 'Invalid relay URL',
       caption: `${error}`,
-      textColor: "black",
-      color: "warning",
-    });
+      textColor: 'black',
+      color: 'warning'
+    })
   } finally {
-    addRelayValue.value = "";
+    addRelayValue.value = ''
   }
-};
+}
 
-const removeRelayFn = (relay) => {
-  user_details.value.relays = user_details.value.relays.filter(
-    (r) => r !== relay
-  );
-};
+const removeRelayFn = relay => {
+  user_details.value.relays = user_details.value.relays.filter(r => r !== relay)
+}
 
 const updateUserIdentifier = async () => {
   try {
-    const { data } = await saas.updateIdentity(user_details.value.id, {
+    const {data} = await saas.updateIdentity(user_details.value.id, {
       pubkey: user_details.value.pubkey,
-      relays: user_details.value.relays,
-    });
-    user_details.value = saas.mapAddressToProfile(data);
-    refreshProfileFromNostr();
+      relays: user_details.value.relays
+    })
+    user_details.value = saas.mapAddressToProfile(data)
+    refreshProfileFromNostr()
     $q.notify({
-      message: "Updated Identifier!",
-      color: "positive",
-    });
+      message: 'Updated Identifier!',
+      color: 'positive'
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
     $q.notify({
-      message: "Failed to update identifer!",
+      message: 'Failed to update identifer!',
       caption: error.response?.data?.detail,
-      color: "negative",
-    });
+      color: 'negative'
+    })
   }
-};
+}
 
 const updateUserLNaddress = async () => {
   try {
     if (!selectedWallet.value) {
       $q.notify({
-        message: "Please select an wallet!",
-        color: "warning",
-      });
-      return;
+        message: 'Please select an wallet!',
+        color: 'warning'
+      })
+      return
     }
     await saas.updateLNaddress(user_details.value.id, {
       wallet: selectedWallet.value.value,
       min: user_details.value.ln_address.min,
-      max: user_details.value.ln_address.max,
-    });
+      max: user_details.value.ln_address.max
+    })
 
     $q.notify({
-      message: "Lighting Address updated!",
-      color: "positive",
-    });
+      message: 'Lighting Address updated!',
+      color: 'positive'
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
     $q.notify({
-      message: "Failed to update Lightning Address!",
+      message: 'Failed to update Lightning Address!',
       caption: error.response?.data?.detail,
-      color: "negative",
-    });
+      color: 'negative'
+    })
   }
-};
+}
 
-const getUserIdentifier = async (id) => {
+const getUserIdentifier = async id => {
   try {
-    const { data } = await saas.getUserIdentities({ localPart: id });
+    const {data} = await saas.getUserIdentities({localPart: id})
 
     if (data.length !== 1) {
-      return;
+      return
     }
-    const address = data[0];
-    return saas.mapAddressToProfile(address);
+    const address = data[0]
+    return saas.mapAddressToProfile(address)
   } catch (error) {
-    console.error("error", error);
+    console.error('error', error)
     $q.notify({
       message: `Failed to fetch identifier '${id}'!`,
       caption: error.response?.data?.detail,
-      color: "negative",
-    });
+      color: 'negative'
+    })
   }
-};
+}
 
 const getAccountDetails = async () => {
   try {
-    const { data } = await saas.getAccountDetails();
+    const {data} = await saas.getAccountDetails()
 
-    const wallets = data.wallets.map((w) => ({
+    const wallets = data.wallets.map(w => ({
       label: w.name,
-      value: w.id,
-    }));
-    userWallets.value = wallets;
+      value: w.id
+    }))
+    userWallets.value = wallets
   } catch (error) {
-    console.error(error);
+    console.error(error)
     $q.notify({
-      message: "Failed to get user wallets!",
+      message: 'Failed to get user wallets!',
       caption: error.response?.data?.detail,
-      color: "negative",
-    });
+      color: 'negative'
+    })
   }
-};
+}
 
 function refreshRelaysFromNostr() {
-  const profile = $nostr.profiles.get(user_details.value.pubkey);
+  const profile = $nostr.profiles.get(user_details.value.pubkey)
   if (profile) {
-    user_details.value.picture = profile.picture;
-    (profile.relays || []).forEach((r) => addRelayFn(r));
+    user_details.value.picture = profile.picture
+    ;(profile.relays || []).forEach(r => addRelayFn(r))
   }
 }
 
 function refreshProfileFromNostr() {
-  const profile = $nostr.profiles.get(user_details.value.pubkey);
+  const profile = $nostr.profiles.get(user_details.value.pubkey)
   if (profile) {
-    user_details.value.picture = profile.picture;
+    user_details.value.picture = profile.picture
+  }
+}
+
+async function handleTypeChange(type) {
+  if ($bids.roomByType(type)) {
+    sellData.value.room = $bids.roomByType(type)
+    sellData.value.currency = sellData.value.room.currency
+    return
+  }
+  const {data: room} = await saas.getRoomInfoByType(type)
+  $bids.addRoom(room)
+  sellData.value.room = room
+  sellData.value.currency = room.currency
+}
+
+async function createSellOffer() {
+  sellData.value.type = 'auction'
+  showSellDialog.value = true
+
+  try {
+    const {data: room} = await saas.getRoomInfoByType(sellData.value.type)
+    $bids.addRoom(room)
+    sellData.value.currency = room.currency
+    sellData.value.room = {...room}
+  } catch (error) {
+    console.error(error)
+    $q.notify({
+      message: 'Failed to start identifier sell offer!',
+      caption: error.response?.data?.detail,
+      color: 'warning'
+    })
+  }
+}
+
+async function sendSellOffer() {
+  try {
+    const {data: transferData} = await saas.getTransferCode(
+      user_details.value.id
+    )
+
+    const {data} = await saas.sellIdentifier({
+      name: user_details.value.name,
+      transfer_code: transferData.transfer_code,
+      ...sellData.value
+    })
+
+    if (data.id) {
+      $q.notify({
+        message: 'Identifier sell offer started!',
+        color: 'positive'
+      })
+      showSellDialog.value = false
+      setTimeout(() => {
+        $router.push({path: `/bid/${data.id}`})
+      }, 1000)
+    }
+  } catch (error) {
+    console.error(error)
+    $q.notify({
+      message: 'Failed to start identifier sell offer!',
+      caption: error.response?.data?.detail,
+      color: 'warning'
+    })
+  }
+}
+
+function resetSellData() {
+  sellData.value = {}
+}
+
+async function getItemByName(name) {
+  const params = {
+    limit: 100,
+    search: name,
+    include_inactive: true
+  }
+  try {
+    const {
+      data: {data: auctions}
+    } = await saas.getAuctions(params)
+    if (auctions.length && auctions.find(i => i.name === name)) {
+      itemId.value = auctions.find(i => i.name === name).id
+      return
+    }
+    const {
+      data: {data: sales}
+    } = await saas.getFixedPrice(params)
+    if (sales.length && sales.find(i => i.name === name)) {
+      itemId.value = sales.find(i => i.name === name).id
+      return
+    }
+  } catch (error) {
+    console.error(error)
+    $q.notify({
+      message: 'Failed to get item!',
+      caption: error.response?.data?.detail,
+      color: 'negative'
+    })
   }
 }
 
 onMounted(async () => {
-  const name = props.name || $route.params.name;
+  const name = props.name || $route.params.name
   if (!name) {
-    return $router.push({ path: "/identities" });
+    return $router.push({path: '/identities'})
   }
-  const identifier = await getUserIdentifier(name);
+  const identifier = await getUserIdentifier(name)
 
-  await getAccountDetails();
+  await getAccountDetails()
+  await getItemByName(name)
+
   if (identifier) {
-    user_details.value = identifier;
+    user_details.value = identifier
     selectedWallet.value = userWallets.value.find(
-      (w) => w.value === identifier.ln_address.wallet
-    );
-    refreshProfileFromNostr();
-    return;
+      w => w.value === identifier.ln_address.wallet
+    )
+    refreshProfileFromNostr()
+    return
   }
-});
+})
 </script>

@@ -43,12 +43,12 @@
         rounded
         v-model.trim="handle"
         class="input q-pa-lg"
-        :style="{ width: $q.screen.gt.sm ? '100%' : null }"
+        :style="{width: $q.screen.gt.sm ? '100%' : null}"
         placeholder="@nostr.com"
         hint="Powered by LNbits"
         label-color="blue-grey-4"
         :input-style="{
-          fontSize: '22px',
+          fontSize: '22px'
         }"
         @keydown.enter.prevent="handleSearch"
       >
@@ -64,11 +64,22 @@
             label="Search"
             @click="handleSearch"
             class="text-capitalize"
+            :disable="searching"
           />
         </template>
       </q-input>
-
+      <div class="row input">
+        <q-btn
+          rounded
+          outline
+          color="secondary"
+          to="/bid"
+          label="Check out the Identifier auctions"
+          class="text-capitalize"
+        />
+      </div>
       <div class="flex full-width justify-center" ref="nipCard">
+        <q-spinner v-if="searching" color="secondary" size="2rem" />
         <div class="nip-list q-pa-lg" v-if="$store.showCard">
           <CardItem
             :name="$store.handle"
@@ -76,6 +87,7 @@
             :close="closeCard"
             :action="handleBuy"
             :free="handleFreeId"
+            :bid="$bids.getItemByName($store.handle)"
           />
         </div>
       </div>
@@ -106,104 +118,110 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { saas } from "src/boot/saas";
-import { useQuasar, scroll } from "quasar";
-import { useAppStore } from "src/stores/store";
-import { useRouter, useRoute } from "vue-router";
+import {ref, onMounted} from 'vue'
+import {saas} from 'src/boot/saas'
+import {useQuasar, scroll} from 'quasar'
+import {useAppStore} from 'src/stores/store'
+import {useBidStore} from 'src/stores/bids'
+import {useRouter, useRoute} from 'vue-router'
 
-import NostrHeadIcon from "components/NostrHeadIcon.vue";
-import CardItem from "components/cards/CardItem.vue";
+import NostrHeadIcon from 'components/NostrHeadIcon.vue'
+import CardItem from 'components/cards/CardItem.vue'
 
-const $q = useQuasar();
-const $store = useAppStore();
-const $router = useRouter();
-const $route = useRoute();
-const { getScrollTarget, setVerticalScrollPosition } = scroll;
+const $q = useQuasar()
+const $store = useAppStore()
+const $bids = useBidStore()
+const $router = useRouter()
+const $route = useRoute()
+const {getScrollTarget, setVerticalScrollPosition} = scroll
 
-const handle = ref("");
-const nipCard = ref(null);
+const handle = ref('')
+const nipCard = ref(null)
+
+const searching = ref(false)
 
 const handleSearch = async () => {
   if (!handle.value) {
-    return;
+    return
   }
   try {
-    const { data } = await saas.queryIdentifier(handle.value);
-    $store.handle = handle.value;
-    data.hasFreeOption = !!data.free_identifier_number;
-    $store.handleData = data;
+    searching.value = true
+    const {data} = await saas.queryIdentifier(handle.value)
+    $store.handle = handle.value
+    data.hasFreeOption = !!data.free_identifier_number
+    $store.handleData = data
   } catch (error) {
-    console.error("Error searching for identifier: ", error);
+    console.error('Error searching for identifier: ', error)
     $q.notify({
-      message: "There was a problem while searching",
-      color: "negative",
-      position: "top",
-      timeout: 2000,
-    });
+      message: 'There was a problem while searching',
+      color: 'negative',
+      position: 'top',
+      timeout: 2000
+    })
   } finally {
-    $router.push({ query: { q: handle.value } });
-    const element = nipCard.value;
-    scrollToElement(element);
+    searching.value = false
+    $router.push({query: {q: handle.value}})
+    const element = nipCard.value
+    scrollToElement(element)
   }
-};
+}
 const handleBuy = () => {
   if (!$store.isLoggedIn) {
     $q.notify({
-      message: "Please login to buy",
-      color: "warning",
-      textColor: "black",
-    });
+      message: 'Please login to buy',
+      color: 'warning',
+      textColor: 'black'
+    })
   }
-  $store.buying = true;
-  $store.newCartIdentifier = handle;
-  $store.handle = "";
+  $store.buying = true
+  $store.newCartIdentifier = handle
+  $store.handle = ''
   setTimeout(() => {
-    $router.push({ path: "/cart" });
-  }, 500);
-};
+    $router.push({path: '/cart'})
+  }, 500)
+}
 
 const handleFreeId = () => {
   if (!$store.isLoggedIn) {
     $q.notify({
-      message: "Please to get your free identifier",
-      color: "warning",
-      textColor: "black",
-    });
+      message: 'Please to get your free identifier',
+      color: 'warning',
+      textColor: 'black'
+    })
   }
-  $store.buying = true;
+  $store.buying = true
   if ($store.handleData.hasFreeOption) {
     $store.freeCartIdentifier =
       $store.handleData.identifier +
-      "." +
-      $store.handleData.free_identifier_number.padStart(6, "0");
+      '.' +
+      $store.handleData.free_identifier_number.padStart(6, '0')
   }
 
-  $store.handle = "";
+  $store.handle = ''
   setTimeout(() => {
-    $router.push({ path: "/identities" });
-  }, 500);
-};
-const pubkey = $route.query["npub"] || $route.query["pubkey"];
-if (pubkey) {
-  $store.pubkey = pubkey;
+    $router.push({path: '/identities'})
+  }, 500)
 }
-if ($route.query["q"]) {
-  handle.value = $route.query["q"];
-  handleSearch();
+const pubkey = $route.query['npub'] || $route.query['pubkey']
+if (pubkey) {
+  $store.pubkey = pubkey
+}
+if ($route.query['q']) {
+  handle.value = $route.query['q']
+  handleSearch()
 }
 
 function scrollToElement(el) {
-  const target = getScrollTarget(el);
-  const offset = el.offsetTop;
-  const duration = 500;
-  setVerticalScrollPosition(target, offset, duration);
+  const target = getScrollTarget(el)
+  const offset = el.offsetTop
+  const duration = 500
+  setVerticalScrollPosition(target, offset, duration)
 }
 
 function closeCard() {
-  $store.resetHandle();
-  handle.value = "";
-  $router.replace({ query: null });
+  $store.resetHandle()
+  handle.value = ''
+  $router.replace({query: null})
 }
 </script>
 
@@ -284,7 +302,7 @@ function closeCard() {
   .index-content {
     display: grid;
     gap: 3rem;
-    grid-template-areas: "sidebar main";
+    grid-template-areas: 'sidebar main';
     grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr);
 
     .sidebar {
@@ -297,7 +315,7 @@ function closeCard() {
 @media (min-width: $breakpoint-lg-min) {
   .index-content {
     gap: 3rem;
-    grid-template-areas: "sidebar main info";
+    grid-template-areas: 'sidebar main info';
     grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr) minmax(0, 15rem);
 
     .info {
