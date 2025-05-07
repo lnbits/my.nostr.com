@@ -88,57 +88,11 @@
             </q-list>
           </q-menu>
         </q-btn>
-        <!-- <q-btn
-          v-if="$store.isLoggedIn && participating.length"
-          unelevated
-          :outline="$q.screen.gt.xs"
-          rounded
-          class="text-capitalize q-ml-sm"
-          text-color="secondary"
-          color="primary"
-          icon-right="dangerous"
-          :label="$q.screen.gt.xs ? 'Outbids' : null"
-          @click="showOutbidded = !showOutbidded"
-        >
-          <q-badge
-            v-if="outbidded.length"
-            class="q-ml-sm"
-            color="negative"
-            floating
-            :label="outbidded.length"
-            style="font-size: 0.8em"
-          />
-        </q-btn> -->
       </template>
     </q-input>
     <div class="container q-mt-lg">
       <div class="pitch q-mx-auto">
         <CardOutbid :items="outbidded" v-if="outbidded.length" />
-        <!-- <div class="flex-center q-my-md q-px-md" v-if="showOutbidded">
-          <div v-if="!outbidded.length" class="q-pa-md">
-            <div class="text-center text-white q-mt-xl">
-              <q-icon
-                name="military_tech"
-                size="64px"
-                color="secondary"
-                class="q-mb-lg"
-              />
-              <q-item-label
-                class="text-h6"
-                v-text="'Seems like you are winning all your bids'"
-              ></q-item-label>
-            </div>
-          </div>
-          <q-list dark>
-            <CardOutbid
-              v-for="item in outbidded"
-              :key="item.id"
-              :item="item"
-              class="q-my-sm"
-              :to="`/bid/${item.id}`"
-            />
-          </q-list>
-        </div> -->
         <q-tabs
           v-model="$bids.openTab"
           dense
@@ -248,14 +202,6 @@
                       no-wrap
                       :label="props.row.active ? 'Bid' : 'View'"
                     >
-                      <!-- <div v-if="buttonIcon(props)">
-                        <q-icon
-                          :name="buttonIcon(props)"
-                          size="xs"
-                          color="primary"
-                          class="q-ml-xs"
-                        />
-                      </div> -->
                     </q-btn>
                   </q-td>
                 </q-tr>
@@ -518,15 +464,6 @@ function findOutbids() {
   const outbids = participating.value.filter(item => !item.user_is_top_bidder)
   return outbids
 }
-
-// const buttonIcon = props => {
-//   const {active, user_is_participant, user_is_top_bidder} = props.row
-//   if (!active) return null
-//   if (user_is_participant) {
-//     return user_is_top_bidder ? 'military_tech' : 'sentiment_dissatisfied'
-//   }
-//   return null
-// }
 
 onMounted(async () => {
   await getFixedPrice()
