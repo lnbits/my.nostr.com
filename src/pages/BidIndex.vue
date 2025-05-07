@@ -529,8 +529,8 @@ function findOutbids() {
 // }
 
 onMounted(async () => {
-  await getAuctions()
   await getFixedPrice()
+  await getAuctions()
   if ($store.isLoggedIn) {
     loadingParticipating.value = true
     participating.value = getParticipating()
