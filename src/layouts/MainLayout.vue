@@ -70,7 +70,7 @@
               class="text-capitalize nostr-card"
               color="secondary"
               text-color="primary"
-              label="Shop"
+              label="SHOP"
               href="https://shop.lnbits.com/product-category/nostr"
               target="_blank"
             />
