@@ -64,6 +64,15 @@
               text-color="primary"
               label="Account"
             />
+            <q-btn
+              rounded
+              class="text-capitalize nostr-card"
+              color="secondary"
+              text-color="primary"
+              label="Shop"
+              href="https://shop.lnbits.com/product-category/nostr"
+              target="_blank"
+            />
           </template>
         </div>
       </q-toolbar>
