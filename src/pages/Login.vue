@@ -65,38 +65,15 @@
         </div>
       </q-card-section>
       <q-card-section>
-        <div v-if="!isSignupRequest && !isUsernameLogin">
+        <div v-if="!isSignupRequest && !loginMode">
           <q-btn
-            label="Login with username"
-            icon="person"
+            label="Login"
+            icon="login"
             type="button"
             color="primary"
             class="full-width text-capitalize"
             :disable="inProgress"
-            @click="showUsernameLogin"
-          />
-          <q-btn
-            label="Login with Extension"
-            icon="extension"
-            type="button"
-            color="secondary"
-            class="full-width q-mt-sm text-capitalize"
-            :disable="inProgress"
-            @click="loginWithExtension"
-          />
-          <q-btn
-            label="Login with Remote Signer"
-            icon="vpn_key"
-            type="button"
-            color="grey"
-            class="full-width q-mt-sm text-capitalize"
-            disable
-          />
-          <q-linear-progress
-            v-if="inProgress"
-            indeterminate
-            color="secondary"
-            class="q-mt-sm"
+            @click="showLoginOptions"
           />
 
           <div class="q-mt-sm text-center">
@@ -110,6 +87,49 @@
             color="secondary"
             class="full-width q-mt-sm text-capitalize"
             :disable="inProgress"
+          />
+        </div>
+
+        <div v-else-if="!isSignupRequest && isLoginOptions">
+          <q-btn
+            label="Login with username"
+            icon="person"
+            type="button"
+            color="primary"
+            class="full-width text-capitalize"
+            :disable="inProgress"
+            @click="showUsernameLogin"
+          />
+          <q-btn
+            label="Login with Extension"
+            icon="extension"
+            type="button"
+            color="primary"
+            class="full-width q-mt-sm text-capitalize"
+            :disable="inProgress"
+            @click="loginWithExtension"
+          />
+          <q-btn
+            label="Login with Remote Signer"
+            icon="vpn_key"
+            type="button"
+            color="primary"
+            class="full-width q-mt-sm text-capitalize"
+            disable
+          />
+          <q-linear-progress
+            v-if="inProgress"
+            indeterminate
+            color="secondary"
+            class="q-mt-sm"
+          />
+
+          <q-btn
+            @click="resetLoginOptions"
+            label="Back"
+            type="button"
+            class="full-width q-mt-md"
+            color="grey"
           />
         </div>
 
@@ -179,7 +199,7 @@
           />
           <q-btn
             v-if="!this.isSignupRequest"
-            @click="resetLoginOptions"
+            @click="showLoginOptions"
             label="Back"
             type="button"
             class="full-width q-mt-md"
@@ -232,11 +252,14 @@ export default defineComponent({
     }
   },
   computed: {
-    isUsernameLogin() {
-      return this.loginMode === "username";
+    isLoginOptions() {
+      return this.loginMode === "options";
     },
   },
   methods: {
+    showLoginOptions() {
+      this.loginMode = "options";
+    },
     showUsernameLogin() {
       this.loginMode = "username";
     },
