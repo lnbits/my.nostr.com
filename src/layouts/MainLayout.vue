@@ -19,7 +19,10 @@
                 <q-avatar size="26px" class="q-mr-sm">
                   <img src="~assets/nostrich-head-32.svg" />
                 </q-avatar>
-                <span v-text="$store.username"></span>
+                <span
+                  :title="$store.username"
+                  v-text="formatAccountDisplayName($store.username)"
+                ></span>
               </div>
             </template>
             <q-list v-ripple style="min-width: 100px">
@@ -320,6 +323,11 @@ onMounted(async () => {
 
 const home = () => {
   $router.push('/')
+}
+
+const formatAccountDisplayName = value => {
+  const name = value || ''
+  return name.length > 10 ? `${name.slice(0, 10)}...` : name
 }
 
 const logout = async () => {
