@@ -44,6 +44,45 @@ const saas = {
 
     return data
   },
+  nostrLogin: async function () {
+    const nostr = window.nostr
+    if (!nostr || typeof nostr.signEvent !== 'function') {
+      throw new Error('NIP-07 browser extension not found.')
+    }
+
+    const origin = window.location.origin
+    const event = {
+      kind: 27235,
+      tags: [
+        ['u', `${origin}/nostr`],
+        ['method', 'POST']
+      ],
+      created_at: Math.floor(Date.now() / 1000),
+      content: ''
+    }
+    const signedEvent = await nostr.signEvent(event)
+    if (!signedEvent?.pubkey || !signedEvent?.id || !signedEvent?.sig) {
+      throw new Error('Nostr extension did not sign the login event.')
+    }
+
+    const {data} = await axios({
+      method: 'POST',
+      url: `${origin}/api/v1/auth/nostr`,
+      headers: {
+        Authorization: `Nostr ${btoa(JSON.stringify(signedEvent))}`
+      }
+    })
+
+    const {data: user} = await axios({
+      method: 'GET',
+      url: `${origin}/api/v1/auth`
+    })
+    const username = user.username || user.pubkey || user.id || 'Nostr user'
+    this.username = username
+    localStorage.setItem('username', username)
+
+    return data
+  },
   logout: async function () {
     const response = await axios({
       method: 'POST',

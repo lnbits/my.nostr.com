@@ -65,7 +65,55 @@
         </div>
       </q-card-section>
       <q-card-section>
-        <q-form @submit="onSubmit">
+        <div v-if="!isSignupRequest && !isUsernameLogin">
+          <q-btn
+            label="Login with username"
+            icon="person"
+            type="button"
+            color="primary"
+            class="full-width text-capitalize"
+            :disable="inProgress"
+            @click="showUsernameLogin"
+          />
+          <q-btn
+            label="Login with Extension"
+            icon="extension"
+            type="button"
+            color="secondary"
+            class="full-width q-mt-sm text-capitalize"
+            :disable="inProgress"
+            @click="loginWithExtension"
+          />
+          <q-btn
+            label="Login with Remote Signer"
+            icon="vpn_key"
+            type="button"
+            color="grey"
+            class="full-width q-mt-sm text-capitalize"
+            disable
+          />
+          <q-linear-progress
+            v-if="inProgress"
+            indeterminate
+            color="secondary"
+            class="q-mt-sm"
+          />
+
+          <div class="q-mt-sm text-center">
+            <span>or</span>
+          </div>
+
+          <q-btn
+            label="Register"
+            @click="signup"
+            type="button"
+            color="secondary"
+            class="full-width q-mt-sm text-capitalize"
+            :disable="inProgress"
+          />
+        </div>
+
+        <q-form v-else @submit="onSubmit">
           <q-input
             filled
             v-model="username"
@@ -102,7 +150,6 @@
           <q-btn
             v-if="!this.isSignupRequest"
             label="Login"
-            @click="login"
             type="submit"
             color="primary"
             class="full-width text-capitalize"
@@ -114,16 +161,33 @@
           </div>
 
           <q-btn
+            v-if="!this.isSignupRequest"
             label="Register"
             @click="signup"
+            type="button"
+            color="secondary"
+            class="full-width q-mt-sm text-capitalize"
+            :disable="inProgress"
+          />
+          <q-btn
+            v-else
+            label="Register"
             type="submit"
             color="secondary"
             class="full-width q-mt-sm text-capitalize"
             :disable="inProgress"
           />
           <q-btn
+            v-if="!this.isSignupRequest"
+            @click="resetLoginOptions"
+            label="Back"
+            type="button"
+            class="full-width q-mt-md"
+            color="grey"
+          />
+          <q-btn
             v-if="this.isSignupRequest"
-            @click="this.isSignupRequest = false"
+            @click="resetLoginOptions"
             label="Back"
             type="button"
             class="full-width q-mt-md"
@@ -157,6 +221,7 @@ export default defineComponent({
       passwordRepeat: ref(""),
       isSignupRequest: ref(false),
       isTermsAndConditionsRequest: ref(false),
+      loginMode: ref(null),
       inProgress: ref(false),
       termsAndConditions: ref(""),
     };
@@ -166,7 +231,34 @@ export default defineComponent({
       this.isSignupRequest = true;
     }
   },
+  computed: {
+    isUsernameLogin() {
+      return this.loginMode === "username";
+    },
+  },
   methods: {
+    showUsernameLogin() {
+      this.loginMode = "username";
+    },
+    resetLoginOptions() {
+      this.isSignupRequest = false;
+      this.loginMode = null;
+    },
+    finishLogin(username) {
+      this.q.notify({
+        message: "Logged in!",
+        color: "positive",
+      });
+      this.store.username = username;
+      let path = "/";
+      if (this.store.newCartIdentifier) {
+        path = "/cart";
+      } else if (this.store.freeCartIdentifier) {
+        path = "/identities";
+      }
+
+      setTimeout(() => this.$router.push(path), 500);
+    },
     async login() {
       try {
         this.inProgress = true;
@@ -180,23 +272,29 @@ export default defineComponent({
           return false;
         }
         await saas.login(this.username, this.password);
-        this.q.notify({
-          message: "Logged in!",
-          color: "positive",
-        });
-        this.store.username = this.username;
-        let path = "/";
-        if (this.store.newCartIdentifier) {
-          path = "/cart";
-        } else if (this.store.freeCartIdentifier) {
-          path = "/identities";
-        }
-
-        setTimeout(() => this.$router.push(path), 500);
+        this.finishLogin(this.username);
       } catch (error) {
         console.warn(error);
         this.q.notify({
           message: "Failed to login!",
+          color: "negative",
+          icon: "warning",
+        });
+        return false;
+      } finally {
+        this.inProgress = false;
+      }
+    },
+    async loginWithExtension() {
+      try {
+        this.inProgress = true;
+        await saas.nostrLogin();
+        this.finishLogin(saas.username);
+      } catch (error) {
+        console.warn(error);
+        this.q.notify({
+          message: error.message || "Failed to login with extension!",
+          caption: saas.mapErrorToString(error),
           color: "negative",
           icon: "warning",
         });
@@ -258,6 +356,7 @@ export default defineComponent({
     async signup() {
       if (!this.isSignupRequest) {
         this.isSignupRequest = true;
+        this.loginMode = "username";
         return;
       }
       const message = this.validateSignupForm();
