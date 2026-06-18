@@ -92,7 +92,7 @@
 
         <div v-else-if="!isSignupRequest && isLoginOptions">
           <q-btn
-            label="Login with username"
+            label="Login with Username"
             icon="person"
             type="button"
             color="primary"
@@ -101,7 +101,7 @@
             @click="showUsernameLogin"
           />
           <q-btn
-            label="Login with Extension"
+            label="Login with Nostr Extension"
             icon="extension"
             type="button"
             color="primary"
@@ -110,7 +110,7 @@
             @click="loginWithExtension"
           />
           <q-btn
-            label="Login with Remote Signer"
+            label="Login with Nostr Remote Signer"
             icon="vpn_key"
             type="button"
             color="primary"
