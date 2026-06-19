@@ -1,4 +1,8 @@
 import axios from 'axios'
+import {
+  connectNip46Bunker,
+  createNostrConnectLogin
+} from 'boot/nip46RemoteSigner'
 
 // if (!process.env.DEV) {
 axios.defaults.withCredentials = true
@@ -44,14 +48,9 @@ const saas = {
 
     return data
   },
-  nostrLogin: async function () {
-    const nostr = window.nostr
-    if (!nostr || typeof nostr.signEvent !== 'function') {
-      throw new Error('NIP-07 browser extension not found.')
-    }
-
+  createNip98LoginEvent: function () {
     const origin = window.location.origin
-    const event = {
+    return {
       kind: 27235,
       tags: [
         ['u', `${origin}/nostr`],
@@ -60,11 +59,13 @@ const saas = {
       created_at: Math.floor(Date.now() / 1000),
       content: ''
     }
-    const signedEvent = await nostr.signEvent(event)
+  },
+  completeNostrLogin: async function (signedEvent) {
     if (!signedEvent?.pubkey || !signedEvent?.id || !signedEvent?.sig) {
-      throw new Error('Nostr extension did not sign the login event.')
+      throw new Error('Nostr signer did not sign the login event.')
     }
 
+    const origin = window.location.origin
     const {data} = await axios({
       method: 'POST',
       url: `${origin}/api/v1/auth/nostr`,
@@ -82,6 +83,36 @@ const saas = {
     localStorage.setItem('username', username)
 
     return data
+  },
+  nostrLogin: async function () {
+    const nostr = window.nostr
+    if (!nostr || typeof nostr.signEvent !== 'function') {
+      throw new Error('NIP-07 browser extension not found.')
+    }
+
+    const signedEvent = await nostr.signEvent(this.createNip98LoginEvent())
+    return this.completeNostrLogin(signedEvent)
+  },
+  nostrRemoteSignerBunkerLogin: async function ({connectionToken, onAuthUrl}) {
+    const session = await connectNip46Bunker({connectionToken, onAuthUrl})
+    try {
+      const signedEvent = await session.signEvent(this.createNip98LoginEvent())
+      return await this.completeNostrLogin(signedEvent)
+    } finally {
+      session.close()
+    }
+  },
+  createNostrConnectLogin: function ({relayUrl, onAuthUrl}) {
+    return createNostrConnectLogin({relayUrl, onAuthUrl})
+  },
+  completeNostrConnectLogin: async function (login) {
+    const session = await login.login
+    try {
+      const signedEvent = await session.signEvent(this.createNip98LoginEvent())
+      return await this.completeNostrLogin(signedEvent)
+    } finally {
+      session.close()
+    }
   },
   logout: async function () {
     const response = await axios({
