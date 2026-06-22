@@ -57,6 +57,7 @@ export default configure((/* ctx */) => {
         apiUrl: "",
          // todo: move in caddy (local: kopVtUKKwn4Fkkr4HCYJmm)
         domainID: "3dYkq5gtM4bEipi62KFAUf",
+        fiatProvider: "revolut",
         auctionRoomId: 'DMuZp3cmgNbMMUAFddGQ56',
         fixedPriceRoomId: 'S7HyWhZ6Fk9vAuewSWn9F4',
         termsAndConditionsUrl:
@@ -92,7 +93,7 @@ export default configure((/* ctx */) => {
     devServer: {
       // https: true,
       open: true, // opens browser window automatically
-      port: 8080,
+      port: 8081,
       strictPort: true,
     },
 

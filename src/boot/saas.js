@@ -10,6 +10,7 @@ axios.defaults.withCredentials = true
 
 const saas = {
   domain: process.env.domainID,
+  fiatProvider: process.env.fiatProvider,
   auctionRoomId: process.env.auctionRoomId,
   fixedPriceRoomId: process.env.fixedPriceRoomId,
   url: process.env.apiUrl,
@@ -187,19 +188,26 @@ const saas = {
     return response
   },
   createIdentity: async function (data, createInvoice = false) {
+    const requestData = {
+      domain_id: this.domain,
+      local_part: data.identifier,
+      pubkey: data.pubkey || '',
+      years: data.years,
+      promo_code: data.promo_code,
+      referer: data.referer,
+      create_invoice: createInvoice
+    }
+
+    if (data.is_fiat) {
+      requestData.is_fiat = true
+      requestData.fiat_provider = data.fiat_provider || this.fiatProvider
+    }
+
     // todo: extract object
     const response = await axios({
       method: 'POST',
       url: `${this.url}/nostrnip5/api/v1/user/domain/${this.domain}/address`,
-      data: {
-        domain_id: this.domain,
-        local_part: data.identifier,
-        pubkey: data.pubkey || '',
-        years: data.years,
-        promo_code: data.promo_code,
-        referer: data.referer,
-        create_invoice: createInvoice
-      }
+      data: requestData
     })
 
     return response
