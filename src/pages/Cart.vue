@@ -182,8 +182,8 @@
 
           <q-card-actions align="right" class="q-mt-md">
             <q-btn
-              @click="submitIdentityBuy(cartItem)"
-              :label="`Buy for ${cartItem.extra.price} ${cartItem.extra.currency}`"
+              @click="showPaymentMethodDialog(cartItem)"
+              :label="`Buy for ${formatCartPrice(cartItem)}`"
               class="text-capitalize float-left"
               :disabled="!cartItem.pubkey"
               rounded
@@ -232,7 +232,34 @@
       :backdrop-filter="'blur(4px) saturate(150%)'"
     >
       <q-card style="width: 350px" class="q-pa-md text-center">
-        <q-card-section v-if="paymentDetails?.payment_request">
+        <q-card-section v-if="paymentDetails?.checkoutUrl">
+          <p class="caption">
+            Open the checkout page in a new tab to complete your purchase.
+          </p>
+          <div class="text-h6">
+            <span v-text="paymentDetails.local_part"></span>
+          </div>
+          <div
+            v-if="getFiatPriceText(paymentDetails)"
+            class="text-caption text-grey-7 q-mt-xs"
+          >
+            Fiat price:
+            <span v-text="getFiatPriceText(paymentDetails)"></span>
+          </div>
+          <q-btn
+            type="a"
+            :href="paymentDetails.checkoutUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            rounded
+            unelevated
+            text-color="primary"
+            color="secondary"
+            label="Open checkout page"
+            class="text-capitalize q-mt-md"
+          />
+        </q-card-section>
+        <q-card-section v-else-if="paymentDetails?.payment_request">
           <p class="caption">
             Scan the QR code below using a lightning wallet to secure your Nostr
             identity.
@@ -253,7 +280,7 @@
           <q-linear-progress indeterminate color="secondary" class="q-mt-sm" />
           <div class="row q-mt-md">
             <q-btn
-              v-if="paymentDetails?.payment_request"
+              v-if="paymentDetails?.payment_request && !paymentDetails?.checkoutUrl"
               rounded
               unelevated
               text-color="primary"
@@ -301,6 +328,11 @@
         </div>
       </q-card>
     </q-dialog>
+    <PaymentMethodDialog
+      v-model="paymentMethodDialog"
+      :fiat-price="selectedCartFiatPrice"
+      @select="handlePaymentMethod"
+    />
   </q-page>
 </template>
 
@@ -310,11 +342,17 @@ import {useRouter} from 'vue-router'
 import VueQrcode from '@chenfengyuan/vue-qrcode'
 
 import {useAppStore} from 'src/stores/store'
-import {onMounted, ref} from 'vue'
+import {computed, onMounted, ref} from 'vue'
 import {saas} from 'boot/saas'
-import {timeFromNow} from 'src/boot/utils'
+import {
+  formatCurrency,
+  getCheckoutUrl,
+  getFiatPriceText,
+  timeFromNow
+} from 'src/boot/utils'
 
 import NostrHeadIcon from 'components/NostrHeadIcon.vue'
+import PaymentMethodDialog from 'components/PaymentMethodDialog.vue'
 
 const $q = useQuasar()
 const $store = useAppStore()
@@ -323,11 +361,17 @@ const $router = useRouter()
 const identities = ref([])
 
 const dataDialog = ref(false)
+const paymentMethodDialog = ref(false)
 const showRemoveItemDialog = ref(false)
 const cartItemToRemove = ref(null)
+const selectedCartItem = ref(null)
 
 const paymentDetails = ref({})
 const loading = ref(true)
+
+const selectedCartFiatPrice = computed(() =>
+  selectedCartItem.value ? getFiatPriceText(selectedCartItem.value) : ''
+)
 
 const isSameYear = (y1, y2) => {
   return y1 === y2
@@ -357,6 +401,34 @@ const computeCartItemPrice = async cartItem => {
   Object.assign(cartItem, data)
 }
 
+const formatCartPrice = cartItem => {
+  return formatCurrency(
+    Number(cartItem.extra?.price || 0),
+    cartItem.extra?.currency
+  )
+}
+
+const hasFiatProvider = () => Boolean(`${saas.fiatProvider || ''}`.trim())
+
+const showPaymentMethodDialog = async cartItem => {
+  if (!hasFiatProvider()) {
+    await submitIdentityBuy(cartItem)
+    return
+  }
+  selectedCartItem.value = cartItem
+  paymentMethodDialog.value = true
+}
+
+const handlePaymentMethod = async method => {
+  if (!method || !selectedCartItem.value) {
+    selectedCartItem.value = null
+    return
+  }
+  const cartItem = selectedCartItem.value
+  selectedCartItem.value = null
+  await submitIdentityBuy(cartItem, method)
+}
+
 const getIdentities = async () => {
   try {
     const {data} = await saas.getUserIdentities({active: false})
@@ -370,8 +442,9 @@ const getIdentities = async () => {
   }
 }
 
-const submitIdentityBuy = async cartItem => {
+const submitIdentityBuy = async (cartItem, paymentMethod = 'bitcoin') => {
   try {
+    const isFiatPayment = paymentMethod === 'fiat'
     dataDialog.value = true
 
     paymentDetails.value = {local_part: cartItem.local_part}
@@ -381,17 +454,37 @@ const submitIdentityBuy = async cartItem => {
         pubkey: cartItem.pubkey,
         years: cartItem.extra.years,
         promo_code: cartItem.extra.promo_code,
-        referer: cartItem.extra.referer
+        referer: cartItem.extra.referer,
+        is_fiat: isFiatPayment,
+        fiat_provider: saas.fiatProvider
       },
       true
     )
     // npub to hex
     cartItem.pubkey = data.pubkey
 
-    if (data.payment_request) {
-      paymentDetails.value = {...data}
+    const checkoutUrl = getCheckoutUrl(data)
+    if (checkoutUrl) {
+      paymentDetails.value = {
+        local_part: cartItem.local_part,
+        ...data,
+        checkoutUrl
+      }
+      if (data.payment_hash) {
+        subscribeToPaylinkWs(data.payment_hash, data.local_part)
+      }
+      $q.notify({
+        message: 'Open the checkout page to complete the purchase',
+        color: 'positive',
+        position: 'bottom',
+        timeout: 5000
+      })
+    } else if (data.payment_request) {
+      paymentDetails.value = {local_part: cartItem.local_part, ...data}
 
-      subscribeToPaylinkWs(data.payment_hash, data.local_part)
+      if (data.payment_hash) {
+        subscribeToPaylinkWs(data.payment_hash, data.local_part)
+      }
       $q.notify({
         message: 'Pay the invoice to complete the purchase',
         color: 'positive',

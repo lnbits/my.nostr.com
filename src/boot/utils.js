@@ -152,16 +152,86 @@ function prepareFilterQuery(tableConfig, props) {
 }
 
 function formatCurrency(value, currency) {
-  if (currency === 'sat') {
+  if (currency === 'sat' || currency === 'sats') {
     return `${value.toLocaleString(window.LOCALE, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     })} sats`
   }
+  if (!currency) {
+    return Number(value || 0).toLocaleString(window.LOCALE)
+  }
   return new Intl.NumberFormat(window.LOCALE, {
     style: 'currency',
-    currency: currency || 'sat'
+    currency
   }).format(value)
+}
+
+function firstDefined(...values) {
+  return values.find(value => value !== undefined && value !== null)
+}
+
+function getCheckoutUrl(data = {}) {
+  return firstDefined(
+    data.checkout_url,
+    data.checkoutUrl,
+    data.checkout_page,
+    data.checkout_page_url,
+    data.checkout_session_url,
+    data.payment_url,
+    data.payment_request_url,
+    isValidUrl(data.payment_request) ? data.payment_request : null
+  )
+}
+
+function getFiatPriceText(data = {}) {
+  const extra = data.extra || {}
+  const price = firstDefined(
+    data.fiat_price,
+    data.fiat_amount,
+    data.amount_fiat,
+    data.price_fiat,
+    extra.fiat_price,
+    extra.fiat_amount,
+    extra.amount_fiat,
+    extra.price_fiat
+  )
+  const currency = firstDefined(
+    data.fiat_currency,
+    data.currency_fiat,
+    extra.fiat_currency,
+    extra.currency_fiat
+  )
+
+  if (price !== undefined && price !== null) {
+    return formatCurrency(Number(price), currency || 'USD')
+  }
+
+  const itemPrice = firstDefined(data.price, data.amount, extra.price)
+  const itemCurrency = firstDefined(data.currency, extra.currency)
+  if (itemPrice !== undefined && itemCurrency && !isSatsCurrency(itemCurrency)) {
+    return formatCurrency(Number(itemPrice), itemCurrency)
+  }
+
+  return ''
+}
+
+function isSatsCurrency(currency) {
+  return ['sat', 'sats', 'btc', 'bitcoin'].includes(
+    `${currency}`.toLowerCase()
+  )
+}
+
+function isValidUrl(value) {
+  if (!value || typeof value !== 'string') {
+    return false
+  }
+  try {
+    new URL(value)
+    return true
+  } catch {
+    return false
+  }
 }
 
 export {
@@ -172,5 +242,7 @@ export {
   markdownToHTML,
   countDownTimer,
   prepareFilterQuery,
-  formatCurrency
+  formatCurrency,
+  getCheckoutUrl,
+  getFiatPriceText
 }
